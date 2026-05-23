@@ -1,19 +1,19 @@
-# Plantilla Hexagonal Monorepo
+# Monorepo de Sistema de Gestión de Almacenes (WMS)
 
 ![PHP Version](https://img.shields.io/badge/PHP-8.4+-blueviolet?style=flat-square)
 ![Java Version](https://img.shields.io/badge/Java-21+-orange?style=flat-square)
-![PHP CI](https://github.com/alxarafe/hexagonal-template/actions/workflows/php.yml/badge.svg)
-![Java CI](https://github.com/alxarafe/hexagonal-template/actions/workflows/java.yml/badge.svg)
+![PHP CI](https://github.com/alxarafe/wms/actions/workflows/php.yml/badge.svg)
+![Java CI](https://github.com/alxarafe/wms/actions/workflows/java.yml/badge.svg)
 ![Static Analysis](https://img.shields.io/badge/static%20analysis-PHPStan%20%2B%20Deptrac-blue?style=flat-square)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/alxarafe/hexagonal-template/issues?utf8=✓&q=is%3Aopen%20is%3Aissue)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/alxarafe/wms/issues?utf8=✓&q=is%3Aopen%20is%3Aissue)
 
 > 📚 Also available in english: [README.md](README.md)
 
-Esta es una plantilla diseñada para aplicaciones basadas en arquitectura hexagonal estricta y modelado de dominio avanzado.
+Sistema de gestión de almacén (WMS) diseñado como ejercicio de arquitectura hexagonal estricta y modelado de dominio avanzado.
 
-El repositorio proporciona una estructura reutilizable para implementar el mismo dominio en dos stacks independientes:
+El repositorio implementa en el mismo dominio dos stacks independientes:
 
-- PHP 8.x (Vanilla + Flight)
+- PHP 8.4 (Vanilla)
 - Java 21 (Spring Boot adapters)
 
 Este repositorio incluye una implementación de referencia basada en un dominio de ejemplo para demostrar:
