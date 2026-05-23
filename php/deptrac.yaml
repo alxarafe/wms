@@ -1,0 +1,35 @@
+deptrac:
+  # Define where the source code is
+  paths:
+    - src
+
+  # Define the layers according to the hexagonal architecture
+  layers:
+    - name: Domain
+      collectors:
+        - type: directory
+          value: src/Domain/
+          
+    - name: Application
+      collectors:
+        - type: directory
+          value: src/Application/
+          
+    - name: Infrastructure
+      collectors:
+        - type: directory
+          value: src/Infrastructure/
+
+  # Define the dependency rules (who can use whom)
+  ruleset:
+    # Domain is the core and cannot depend on any other layer
+    Domain: ~
+    
+    # Application can depend on Domain (Use Cases use Entities/Interfaces)
+    Application:
+      - Domain
+      
+    # Infrastructure can depend on both Application and Domain
+    Infrastructure:
+      - Domain
+      - Application

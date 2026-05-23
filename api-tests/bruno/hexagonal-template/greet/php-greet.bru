@@ -1,0 +1,16 @@
+meta {
+  name: PHP Greet
+  method: GET
+  url: {{php_base_url}}/api/greet?name=PHP
+}
+
+headers {
+  Accept: application/json
+}
+
+assert {
+  res.status: eq 200
+  res.body.message: eq "Hello, PHP!"
+  res.body.id: isDefined
+  res.body.createdAt: isDefined
+}

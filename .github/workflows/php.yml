@@ -1,0 +1,79 @@
+name: PHP
+
+on:
+  push:
+  pull_request:
+
+jobs:
+
+  php-tests:
+
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: database
+          POSTGRES_USER: root
+          POSTGRES_PASSWORD: root
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: pdo, pdo_pgsql, pgsql
+
+      - name: Create database table
+        run: PGPASSWORD=root psql -h localhost -U root -d database -f database/migrations/001_create_greetings_table.sql
+
+      - name: Install dependencies
+        run: cd php && composer install --no-interaction
+
+      - name: PHPCS
+        run: cd php && vendor/bin/phpcs
+        env:
+          POSTGRES_HOST: localhost
+          POSTGRES_PORT: 5432
+          POSTGRES_DB: database
+          POSTGRES_USER: root
+          POSTGRES_PASSWORD: root
+
+      - name: PHPStan
+        run: cd php && vendor/bin/phpstan analyse
+        env:
+          POSTGRES_HOST: localhost
+          POSTGRES_PORT: 5432
+          POSTGRES_DB: database
+          POSTGRES_USER: root
+          POSTGRES_PASSWORD: root
+
+      - name: PHPUnit
+        run: cd php && vendor/bin/phpunit
+        env:
+          POSTGRES_HOST: localhost
+          POSTGRES_PORT: 5432
+          POSTGRES_DB: database
+          POSTGRES_USER: root
+          POSTGRES_PASSWORD: root
+
+      - name: Deptrac
+        run: cd php && vendor/bin/deptrac analyse
+        env:
+          POSTGRES_HOST: localhost
+          POSTGRES_PORT: 5432
+          POSTGRES_DB: database
+          POSTGRES_USER: root
+          POSTGRES_PASSWORD: root

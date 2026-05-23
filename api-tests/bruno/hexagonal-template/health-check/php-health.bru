@@ -1,0 +1,15 @@
+meta {
+  name: PHP Health Check
+  method: GET
+  url: {{php_base_url}}/api/health
+}
+
+headers {
+  Accept: application/json
+}
+
+assert {
+  res.status: eq 200
+  res.body.status: eq ok
+  res.body.timestamp: isDefined
+}

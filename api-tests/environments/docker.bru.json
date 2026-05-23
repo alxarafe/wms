@@ -1,0 +1,6 @@
+{
+  "env": [
+    { "name": "php_base_url", "value": "http://php-app:80", "type": "text" },
+    { "name": "java_base_url", "value": "http://java-app:8080", "type": "text" }
+  ]
+}

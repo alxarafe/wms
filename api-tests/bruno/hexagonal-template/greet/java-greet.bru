@@ -1,0 +1,16 @@
+meta {
+  name: Java Greet
+  method: GET
+  url: {{java_base_url}}/api/greet?name=Java
+}
+
+headers {
+  Accept: application/json
+}
+
+assert {
+  res.status: eq 200
+  res.body.message: eq "Hello, Java!"
+  res.body.id: isDefined
+  res.body.createdAt: isDefined
+}

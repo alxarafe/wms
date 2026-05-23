@@ -1,0 +1,54 @@
+services:
+
+  php-app:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+    container_name: php-app
+    volumes:
+      - ./php:/var/www/php
+      - ./database:/var/www/database
+    working_dir: /var/www/php
+    ports:
+      - "8081:80"
+    environment:
+      POSTGRES_HOST: database
+      POSTGRES_PORT: "5432"
+      POSTGRES_DB: database
+      POSTGRES_DB_TEST: database_test
+      MIGRATIONS_PATH: /var/www/database/migrations
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: root
+    depends_on:
+      database:
+        condition: service_started
+
+  java-app:
+    build:
+      context: .
+      dockerfile: docker/java/Dockerfile
+    container_name: java-app
+    volumes:
+      - ./java:/app
+    working_dir: /app
+    ports:
+      - "8082:8080"
+    depends_on:
+      - database
+
+  database:
+    image: postgres:16
+    container_name: hexagonal_database
+    restart: always
+    environment:
+      POSTGRES_DB: database
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: root
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./docker/postgres/init:/docker-entrypoint-initdb.d
+
+volumes:
+  postgres_data:
