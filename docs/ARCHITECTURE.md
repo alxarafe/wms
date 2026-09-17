@@ -123,7 +123,7 @@ Definido en `java/src/test/java/com/alxarafe/ArchitectureTest.java`:
 
 ## Consistencia del contrato de API
 
-Actualmente, ambos stacks exponen `GET /api/health`. Las pruebas de contrato en `php/tests/Contract/` y las peticiones Bruno en `api-tests/bruno/` comprueban esta respuesta en ambas APIs. Todavía no hay contratos HTTP para casos de uso WMS.
+Ambos stacks exponen `GET /api/health` y `POST /api/item-families`. Las pruebas de contrato en `php/tests/Contract/` comprueban el estado de salud; la colección Bruno en `api-tests/bruno/families/` comprueba las cinco altas de familias y los errores de duplicado y atributo incompatible en ambas APIs. El contrato de creación y sus bases de prueba aisladas se detallan en [API de creación de familias](architecture/item-family-api.md).
 
 ## Pirámide de pruebas
 

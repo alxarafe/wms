@@ -16,7 +16,7 @@ El repositorio implementa en el mismo dominio dos stacks independientes:
 - PHP 8.4 (Vanilla)
 - Java 21 (Spring Boot adapters)
 
-El dominio WMS está en desarrollo en ambos stacks. Por ahora, las APIs exponen `GET /api/health` y las pruebas HTTP comprueban ese contrato compartido. La migración WMS define un esquema inicial, todavía sin casos de uso ni adaptadores que lo utilicen.
+El dominio WMS está en desarrollo en ambos stacks. Las APIs exponen `GET /api/health` y `POST /api/item-families`; este último crea familias con atributos de tipo `FAMILY` en PostgreSQL. La colección Bruno comprueba el mismo contrato en PHP y Java con bases de prueba independientes.
 
 ---
 
@@ -80,6 +80,7 @@ Ambas capas representan el mismo sistema desde distintos niveles de abstracción
 # Dentro de los contenedores:
 ./bin/php_test.sh     # PHPUnit (unitarios + integración + contrato)
 ./bin/java_test.sh    # Maven (unitarios + arquitectura)
+./bin/bruno_families_test.sh  # APIs + Bruno en dos bases aisladas; requiere PostgreSQL arrancado
 
 # Pipeline completo:
 ./bin/ci_local.sh     # Tests PHP + tests Java
@@ -106,6 +107,8 @@ cd java && mvn test
 | PHP    | http://localhost:8081/api/health |
 | Java   | http://localhost:8082/api/health |
 | DB     | postgresql://localhost:5432 |
+
+El contrato de `POST /api/item-families` se describe en [docs/architecture/item-family-api.md](docs/architecture/item-family-api.md). Las APIs de prueba Bruno se consultan en `http://localhost:28081` (PHP) y `http://localhost:28082` (Java) tras ejecutar el script.
 
 ### Detener
 

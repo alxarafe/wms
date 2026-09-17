@@ -6,6 +6,7 @@ namespace Alxarafe\App\Domain\Catalogue\Entity;
 
 use Alxarafe\App\Domain\Catalogue\ValueObject\ItemFamilyCode;
 use Alxarafe\App\Domain\Catalogue\ValueObject\ItemFamilyId;
+use Alxarafe\App\Domain\Rules\ValueObject\AttributeCode;
 use InvalidArgumentException;
 
 /**
@@ -20,9 +21,18 @@ final readonly class ItemFamily
         private ItemFamilyId $id,
         private ItemFamilyCode $code,
         private string $name,
+        /** @var list<AttributeCode> */
+        private array $attributes = [],
     ) {
-        if ($name === '') {
+        if (trim($name) === '') {
             throw new InvalidArgumentException('ItemFamily name cannot be empty.');
+        }
+        if (strlen($name) > 255) {
+            throw new InvalidArgumentException('ItemFamily name cannot exceed 255 characters.');
+        }
+        $codes = array_map(static fn (AttributeCode $attribute): string => $attribute->value(), $attributes);
+        if (count(array_unique($codes)) !== count($codes)) {
+            throw new InvalidArgumentException('ItemFamily attributes must be unique.');
         }
     }
 
@@ -39,5 +49,11 @@ final readonly class ItemFamily
     public function name(): string
     {
         return $this->name;
+    }
+
+    /** @return list<AttributeCode> */
+    public function attributes(): array
+    {
+        return $this->attributes;
     }
 }

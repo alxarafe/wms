@@ -13,8 +13,9 @@ final class HealthApiTest extends TestCase
 
     public function testPhpHealthEndpoint(): void
     {
-        $this->skipIfUnreachable(self::PHP_BASE);
-        $response = $this->get(self::PHP_BASE . '/api/health');
+        $base = getenv('PHP_BASE_URL') ?: self::PHP_BASE;
+        $this->skipIfUnreachable($base);
+        $response = $this->get($base . '/api/health');
         $data = json_decode($response, true);
 
         self::assertIsArray($data);
@@ -24,8 +25,9 @@ final class HealthApiTest extends TestCase
 
     public function testJavaHealthEndpoint(): void
     {
-        $this->skipIfUnreachable(self::JAVA_BASE);
-        $response = $this->get(self::JAVA_BASE . '/api/health');
+        $base = getenv('JAVA_BASE_URL') ?: self::JAVA_BASE;
+        $this->skipIfUnreachable($base);
+        $response = $this->get($base . '/api/health');
         $data = json_decode($response, true);
 
         self::assertIsArray($data);
@@ -35,7 +37,7 @@ final class HealthApiTest extends TestCase
 
     public function testGreetingEndpointsAreGoneInBothStacks(): void
     {
-        foreach ([self::PHP_BASE, self::JAVA_BASE] as $base) {
+        foreach ([getenv('PHP_BASE_URL') ?: self::PHP_BASE, getenv('JAVA_BASE_URL') ?: self::JAVA_BASE] as $base) {
             $this->skipIfUnreachable($base);
             $this->get($base . '/api/greet', 404);
             $this->get($base . '/api/greetings', 404);

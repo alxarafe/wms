@@ -35,8 +35,9 @@ for file in "$MIGRATIONS_DIR"/*.sql; do
     docker exec -i "$CONTAINER" psql \
         -U "$DB_USER" \
         -d "$DB_NAME" \
+        -v ON_ERROR_STOP=1 \
         -f - < "$file" \
-        -q 2>&1 | grep -v "^$" || true
+        -q
 
     ok "  ✔ $filename applied"
 done

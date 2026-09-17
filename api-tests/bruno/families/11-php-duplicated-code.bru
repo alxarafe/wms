@@ -1,0 +1,31 @@
+meta {
+  name: PHP - duplicated-code
+  type: http
+  seq: 11
+}
+
+post {
+  url: {{php_base_url}}/api/item-families
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  Accept: application/json
+}
+
+body:json {
+  {
+    "code": "NEUTRAL",
+    "name": "Productos neutros",
+    "attributes": []
+  }
+}
+
+tests {
+  test("rechaza duplicated-code", function () {
+    expect(res.getStatus()).to.equal(409);
+    expect(res.getBody().error).to.equal("Item family code already exists.");
+  });
+}

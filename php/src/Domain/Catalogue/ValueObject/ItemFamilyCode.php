@@ -13,7 +13,7 @@ final readonly class ItemFamilyCode
 {
     public function __construct(private string $value)
     {
-        if ($value === '') {
+        if (trim($value) === '') {
             throw new InvalidArgumentException('ItemFamilyCode cannot be empty.');
         }
 
