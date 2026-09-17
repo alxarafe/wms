@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Tests\Unit\Domain\Inventory\Entity;
@@ -59,6 +60,7 @@ final class HandlingUnitTest extends TestCase
         $locId = new LocationId('018e4e3a-3e7b-7b3e-8000-000000000010');
         $hu->moveToLocation($locId);
 
+        self::assertNotNull($hu->locationId());
         self::assertTrue($locId->equals($hu->locationId()));
         self::assertNull($hu->parentHuId());
     }
@@ -68,6 +70,7 @@ final class HandlingUnitTest extends TestCase
         $hu = new HandlingUnit($this->id, $this->code, null, null, HuStatus::AVAILABLE);
         $hu->nestIntoParent($this->parentId);
 
+        self::assertNotNull($hu->parentHuId());
         self::assertTrue($this->parentId->equals($hu->parentHuId()));
         self::assertNull($hu->locationId());
     }
@@ -86,6 +89,7 @@ final class HandlingUnitTest extends TestCase
         $hu->releaseFromParent($locId);
 
         self::assertNull($hu->parentHuId());
+        self::assertNotNull($hu->locationId());
         self::assertTrue($locId->equals($hu->locationId()));
     }
 

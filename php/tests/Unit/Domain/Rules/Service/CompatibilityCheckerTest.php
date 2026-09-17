@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Tests\Unit\Domain\Rules\Service;
@@ -44,7 +45,8 @@ final class CompatibilityCheckerTest extends TestCase
         $this->activeLocation = new Location(
             new LocationId('018e4e3a-3e7b-7b3e-8000-000000000011'),
             $aisleId,
-            1, 1,
+            1,
+            1,
             new LocationCode('WH01-A01-01-01'),
             LocationRole::PICKING,
             LocationStatus::ACTIVE,
@@ -52,7 +54,8 @@ final class CompatibilityCheckerTest extends TestCase
         $this->inactiveLocation = new Location(
             new LocationId('018e4e3a-3e7b-7b3e-8000-000000000012'),
             $aisleId,
-            1, 1,
+            1,
+            1,
             new LocationCode('WH01-A01-01-02'),
             LocationRole::PICKING,
             LocationStatus::BLOCKED,
@@ -84,7 +87,8 @@ final class CompatibilityCheckerTest extends TestCase
         $hu = new HandlingUnit(
             new HandlingUnitId('018e4e3a-3e7b-7b3e-8000-000000000020'),
             new Sscc('123456789012345675'),
-            null, null,
+            null,
+            null,
             HuStatus::AVAILABLE,
         );
         $result = $this->checker->validate($hu, $this->activeLocation, [], [], []);

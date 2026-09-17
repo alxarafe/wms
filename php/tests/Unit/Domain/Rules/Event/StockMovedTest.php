@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Tests\Unit\Domain\Rules\Event;
@@ -26,6 +27,7 @@ final class StockMovedTest extends TestCase
         self::assertTrue($id->equals($event->id()));
         self::assertSame(MovementType::TRANSFER, $event->type());
         self::assertTrue($huId->equals($event->huId()));
+        self::assertNotNull($event->fromLocationId());
         self::assertTrue($from->equals($event->fromLocationId()));
         self::assertTrue($to->equals($event->toLocationId()));
         self::assertSame($now, $event->performedAt());

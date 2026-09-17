@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Tests\Unit\Domain\Inventory\Entity;
@@ -38,6 +39,7 @@ final class StockQuantTest extends TestCase
             $batchId,
             new Quantity(5.0, 'EA'),
         );
+        self::assertNotNull($quant->batchId());
         self::assertTrue($batchId->equals($quant->batchId()));
     }
 

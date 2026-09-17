@@ -1,9 +1,9 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Tests\Unit\Domain\Shared\ValueObject;
 
-use Alxarafe\App\Domain\Shared\ValueObject\UuidV7Id;
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 
@@ -64,6 +64,3 @@ final class UuidV7IdTest extends TestCase
         self::assertSame($uuid, (string) $id);
     }
 }
-
-final readonly class TestUuidV7Id extends UuidV7Id {}
-final readonly class OtherTestUuidV7Id extends UuidV7Id {}
