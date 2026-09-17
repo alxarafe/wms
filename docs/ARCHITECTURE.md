@@ -1,69 +1,69 @@
-# Architecture Documentation
+# Documentación de Arquitectura
 
-## Hexagonal Architecture (Ports & Adapters)
+## Arquitectura Hexagonal (Puertos y Adaptadores)
 
-This project follows strict **Hexagonal Architecture** (also known as Ports & Adapters). The core idea is to isolate the business domain from external concerns (databases, web frameworks, APIs, etc.).
+Este proyecto sigue una estricta **arquitectura hexagonal** (también conocida como Puertos y Adaptadores). La idea central es aislar el dominio de negocio de las preocupaciones externas (bases de datos, frameworks web, APIs, etc.).
 
-### Why Hexagonal?
+### ¿Por qué hexagonal?
 
-- **Domain isolation**: Business logic has zero dependencies on frameworks, databases, or external services
-- **Testability**: Domain logic can be tested in isolation without infrastructure
-- **Technology independence**: You can swap databases, web frameworks, or UI without changing business rules
-- **Multi-stack consistency**: The same domain can be implemented in PHP and Java with identical behavior
+- **Aislamiento del dominio**: la lógica de negocio no tiene dependencias de frameworks, bases de datos ni servicios externos
+- **Capacidad de prueba**: la lógica de dominio puede probarse de forma aislada sin infraestructura
+- **Independencia tecnológica**: puedes cambiar de base de datos, framework web o interfaz de usuario sin modificar las reglas de negocio
+- **Consistencia multi-stack**: el mismo dominio puede implementarse en PHP y Java con un comportamiento idéntico
 
-## Layer Details
+## Detalle de las capas
 
-### Domain Layer (`src/Domain/`)
+### Capa de Dominio (`src/Domain/`)
 
-The innermost layer. Contains pure business logic with absolutely no framework or infrastructure dependencies.
+La capa más interna. Contiene lógica de negocio pura sin dependencias de frameworks ni de infraestructura.
 
-**Contains:**
-- **Entities**: Objects with identity (e.g., `User`, `Order`)
-- **Value Objects**: Immutable objects without identity (e.g., `Email`, `Money`)
-- **Aggregates**: Cluster of entities treated as a unit
-- **Domain Services**: Business logic that doesn't naturally fit in an entity
-- **Domain Events**: Things that happened in the domain
-- **Repository Interfaces**: Contracts for data access (defined here, implemented in Infrastructure)
+**Contiene:**
+- **Entidades**: objetos con identidad (p. ej., `User`, `Order`)
+- **Objetos de valor**: objetos inmutables sin identidad (p. ej., `Email`, `Money`)
+- **Agregados**: agrupación de entidades tratadas como unidad
+- **Servicios de dominio**: lógica de negocio que no encaja naturalmente en una entidad
+- **Eventos de dominio**: acontecimientos que ocurrieron en el dominio
+- **Interfaces de repositorio**: contratos de acceso a datos (definidos aquí, implementados en Infrastructure)
 
-**Rules:**
-- NO framework imports
-- NO database access
-- NO HTTP concerns
-- NO external library dependencies
-- MUST be pure PHP/Java
+**Reglas:**
+- NO imports de frameworks
+- NO acceso a base de datos
+- NO preocupaciones HTTP
+- NO dependencias de bibliotecas externas
+- DEBE ser PHP/Java puro
 
-### Application Layer (`src/Application/`)
+### Capa de Aplicación (`src/Application/`)
 
-Orchestrates domain logic. Defines the **use cases** of the application.
+Orquesta la lógica de dominio. Define los **casos de uso** de la aplicación.
 
-**Contains:**
-- **Use Cases / Application Services**: Coordinate domain objects to perform a task
-- **Input Ports**: Interfaces that define how the outside world can interact with the application
-- **Output Ports**: Interfaces that define how the application communicates with the outside world
-- **DTOs**: Data Transfer Objects for input/output
+**Contiene:**
+- **Casos de uso / Servicios de aplicación**: coordinan objetos del dominio para realizar una tarea
+- **Puertos de entrada**: interfaces que definen cómo el mundo exterior puede interactuar con la aplicación
+- **Puertos de salida**: interfaces que definen cómo la aplicación se comunica con el mundo exterior
+- **DTOs**: objetos de transferencia de datos de entrada/salida
 
-**Rules:**
-- Depends ONLY on the Domain layer
-- Contains NO business logic (delegates to Domain)
-- Contains NO infrastructure logic
-- Framework-agnostic
+**Reglas:**
+- Depende SOLO de la capa de Dominio
+- NO contiene lógica de negocio (la delega en el Dominio)
+- NO contiene lógica de infraestructura
+- Independiente de frameworks
 
-### Infrastructure Layer (`src/Infrastructure/`)
+### Capa de Infraestructura (`src/Infrastructure/`)
 
-The outermost layer. Contains all technical implementation details.
+La capa más externa. Contiene todos los detalles de implementación técnica.
 
-**Contains:**
-- **Controllers**: HTTP request handlers
-- **Persistence**: Repository implementations (Doctrine, Eloquent, raw SQL, etc.)
-- **Framework Configuration**: Routing, middleware, service providers
-- **External Service Clients**: API clients, message queues, etc.
+**Contiene:**
+- **Controladores**: manejadores de peticiones HTTP
+- **Persistencia**: implementaciones de repositorios (Doctrine, Eloquent, SQL puro, etc.)
+- **Configuración del framework**: enrutado, middleware, proveedores de servicios
+- **Clientes de servicios externos**: clientes de API, colas de mensajes, etc.
 
-**Rules:**
-- Implements interfaces defined in Application and Domain layers
-- Contains NO business logic
-- Can use frameworks, ORMs, HTTP clients, etc.
+**Reglas:**
+- Implementa las interfaces definidas en las capas de Aplicación y Dominio
+- NO contiene lógica de negocio
+- Puede usar frameworks, ORMs, clientes HTTP, etc.
 
-## Ports & Adapters Pattern
+## Patrón Puertos y Adaptadores
 
 ```
                       +----------+
@@ -84,88 +84,88 @@ The outermost layer. Contains all technical implementation details.
          +--------+  +--------+  +--------+
 ```
 
-- **Ports** = interfaces defined in Application layer
-- **Adapters** = implementations in Infrastructure layer
-- Adapters are "plugged into" ports via dependency injection
+- **Puertos** = interfaces definidas en la capa de Aplicación
+- **Adaptadores** = implementaciones en la capa de Infraestructura
+- Los adaptadores se "enchufan" a los puertos mediante inyección de dependencias
 
-## Architectural Enforcement
+## Cumplimiento arquitectónico
 
 ### PHP (Deptrac)
 
-Configuration in `php/deptrac.yaml`:
+Configuración en `php/deptrac.yaml`:
 
-- Layers: `Domain`, `Application`, `Infrastructure`
-- `Domain` -> no dependencies allowed
-- `Application` -> can depend on `Domain`
-- `Infrastructure` -> can depend on `Domain` and `Application`
+- Capas: `Domain`, `Application`, `Infrastructure`
+- `Domain` -> no se permiten dependencias
+- `Application` -> puede depender de `Domain`
+- `Infrastructure` -> puede depender de `Domain` y `Application`
 
-Run: `vendor/bin/deptrac analyse`
+Ejecutar: `vendor/bin/deptrac analyse`
 
 ### Java (ArchUnit)
 
-Defined in `java/src/test/java/com/alxarafe/ArchitectureTest.java`:
+Definido en `java/src/test/java/com/alxarafe/ArchitectureTest.java`:
 
-- Uses `layeredArchitecture()` from ArchUnit
-- Validates same layer rules as Deptrac
-- Run: `mvn test` (part of test suite)
+- Usa `layeredArchitecture()` de ArchUnit
+- Valida las mismas reglas de capas que Deptrac
+- Ejecutar: `mvn test` (parte de la suite de pruebas)
 
 ### PHP (PHPStan)
 
-- Level 8 (maximum strictness)
-- Configured in `php/phpstan.neon`
-- Analyzes both `src/` and `tests/`
+- Nivel 8 (máxima estrictez)
+- Configurado en `php/phpstan.neon`
+- Analiza tanto `src/` como `tests/`
 
 ### PHP (PHPCS)
 
-- PSR-12 standard
-- Configured in `php/phpcs.xml`
+- Estándar PSR-12
+- Configurado en `php/phpcs.xml`
 
-## API Contract Consistency
+## Consistencia del contrato de API
 
-Both PHP and Java stacks expose identical API contracts. Consistency is validated through:
+Ambos stacks, PHP y Java, exponen contratos de API idénticos. La consistencia se valida mediante:
 
-1. **Contract tests** (`php/tests/Contract/`): Shared behavioral tests run against both stacks
-2. **Bruno collections** (`api-tests/bruno/`): API request/response definitions used across stacks
+1. **Pruebas de contrato** (`php/tests/Contract/`): pruebas de comportamiento compartidas ejecutadas contra ambos stacks
+2. **Colecciones Bruno** (`api-tests/bruno/`): definiciones de peticiones/respuestas de API utilizadas en todos los stacks
 
-## Testing Pyramid
+## Pirámide de pruebas
 
 ```
         /\
        /  \
-      / UI \              <- Contract tests (Bruno collections)
+      / UI \              <- Pruebas de contrato (colecciones Bruno)
      /------\
-    /Service\             <- Integration tests (DB + adapters)
+    /Service\             <- Pruebas de integración (BD + adaptadores)
    /----------\
-  /   Unit     \          <- Unit tests (pure domain logic)
+  /   Unit     \          <- Pruebas unitarias (lógica de dominio pura)
  /--------------\
 ```
 
-## Docker Environment
+## Entorno Docker
 
-Services defined in `docker-compose.yml`:
+Servicios definidos en `docker-compose.yml`:
 
-| Service | Container | Port | Purpose |
-|---------|-----------|------|---------|
-| `php-app` | PHP 8.4 (Apache) | 8081 | PHP HTTP API |
-| `java-app` | Java 21 (Temurin) | 8082 | Java HTTP API |
-| `database` | PostgreSQL 16 | 5432 | Shared database |
+| Servicio | Contenedor | Puerto | Propósito |
+|----------|-----------|--------|-----------|
+| `php-app` | PHP 8.4 (Apache) | 8081 | API HTTP PHP |
+| `java-app` | Java 21 (Temurin) | 8082 | API HTTP Java |
+| `database` | PostgreSQL 16 | 5432 | Base de datos compartida |
 
-## How to Add a New Feature
+## Cómo añadir una nueva funcionalidad
 
-1. **Start with the Domain**: Define entities, value objects, and domain services
-2. **Define use cases in Application**: Create application services and ports
-3. **Implement adapters in Infrastructure**: Build controllers, repositories, etc.
-4. **Write tests at each level**: Unit -> Integration -> Contract
-5. **Add API tests**: Update Bruno collections in `api-tests/`
-6. **Verify**: Run `./bin/ci_local.sh`
+1. **Empieza por el Dominio**: define entidades, objetos de valor y servicios de dominio
+2. **Define los casos de uso en Application**: crea servicios de aplicación y puertos
+3. **Implementa los adaptadores en Infrastructure**: crea controladores, repositorios, etc.
+4. **Escribe pruebas en cada nivel**: Unidad -> Integración -> Contrato
+5. **Añade pruebas de API**: actualiza las colecciones Bruno en `api-tests/`
+6. **Verifica**: ejecuta `./bin/ci_local.sh`
 
-## Technology Decisions
+## Decisiones tecnológicas
 
-| Decision | Rationale |
-|----------|-----------|
-| PHP Vanilla + Flight | Lightweight, no framework lock-in for the template; teams can swap in Symfony/Laravel adapters |
-| Java + Spring Boot adapters | Industry standard for Java enterprise; adapters can be swapped for Quarkus/Micronaut |
-| PostgreSQL | Widely used, strong DDD support (JSON, enums, UUID) |
-| Deptrac + ArchUnit | Automate architecture governance; fail CI on layer violations |
-| PHPStan level 8 | Maximum static analysis strictness |
-| Bruno over Postman | Git-friendly API collections, no vendor lock-in |
+| Decisión | Justificación |
+|----------|--------------|
+| PHP Vanilla + Flight | Ligero, sin dependencia de un framework para la plantilla; los equipos pueden sustituir los adaptadores por Symfony/Laravel |
+| Java + adaptadores Spring Boot | Estándar de la industria para Java empresarial; los adaptadores pueden sustituirse por Quarkus/Micronaut |
+| PostgreSQL | Muy utilizado, gran soporte DDD (JSON, enums, UUID) |
+| Deptrac + ArchUnit | Automatizan el gobierno de la arquitectura; fallan el CI ante violaciones de capas |
+| PHPStan nivel 8 | Máxima estrictez del análisis estático |
+| Bruno en lugar de Postman | Colecciones de API compatibles con Git, sin dependencia del proveedor |

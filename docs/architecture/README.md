@@ -1,14 +1,14 @@
-# Architecture Documentation
+# Documentación de Arquitectura
 
-Contains technical documentation related to the system architecture.
+Contiene documentación técnica relacionada con la arquitectura del sistema.
 
-Typical topics:
-- Hexagonal architecture
-- Dependency boundaries
-- Layer responsibilities
-- Ports and adapters
-- Architectural decisions
-- Enforcement rules
+Temas habituales:
+- Arquitectura hexagonal
+- Límites de dependencias
+- Responsabilidades de las capas
+- Puertos y adaptadores
+- Decisiones de arquitectura
+- Reglas de cumplimiento
 
-Goal:
-Provide a shared architectural reference for all implementations.
+Objetivo:
+Proporcionar una referencia arquitectónica compartida para todas las implementaciones.

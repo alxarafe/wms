@@ -1,15 +1,15 @@
-# Domain Documentation
+# Documentación de Dominio
 
-Contains documentation related to the business domain and conceptual model.
+Contiene documentación relacionada con el dominio de negocio y el modelo conceptual.
 
-Typical topics:
-- Ubiquitous language
-- Business rules
-- Aggregates
-- Entities
-- Value Objects
-- Use cases
-- Domain workflows
+Temas habituales:
+- Lenguaje ubicuo
+- Reglas de negocio
+- Agregados
+- Entidades
+- Objetos de valor
+- Casos de uso
+- Flujos de trabajo del dominio
 
-Goal:
-Keep the business model independent from technical implementation details.
+Objetivo:
+Mantener el modelo de negocio independiente de los detalles de implementación técnica.

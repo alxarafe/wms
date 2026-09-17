@@ -9,6 +9,7 @@ dist/
 
 *.class
 *.log
+*.old
 
 .env
 .env.*
