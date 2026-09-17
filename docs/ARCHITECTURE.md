@@ -107,6 +107,7 @@ Definido en `java/src/test/java/com/alxarafe/ArchitectureTest.java`:
 
 - Usa `layeredArchitecture()` de ArchUnit
 - Valida las mismas reglas de capas que Deptrac
+- La capa Application es opcional mientras no haya casos de uso WMS; las restricciones de acceso siguen configuradas.
 - Ejecutar: `mvn test` (parte de la suite de pruebas)
 
 ### PHP (PHPStan)
@@ -122,10 +123,7 @@ Definido en `java/src/test/java/com/alxarafe/ArchitectureTest.java`:
 
 ## Consistencia del contrato de API
 
-Ambos stacks, PHP y Java, exponen contratos de API idénticos. La consistencia se valida mediante:
-
-1. **Pruebas de contrato** (`php/tests/Contract/`): pruebas de comportamiento compartidas ejecutadas contra ambos stacks
-2. **Colecciones Bruno** (`api-tests/bruno/`): definiciones de peticiones/respuestas de API utilizadas en todos los stacks
+Actualmente, ambos stacks exponen `GET /api/health`. Las pruebas de contrato en `php/tests/Contract/` y las peticiones Bruno en `api-tests/bruno/` comprueban esta respuesta en ambas APIs. Todavía no hay contratos HTTP para casos de uso WMS.
 
 ## Pirámide de pruebas
 

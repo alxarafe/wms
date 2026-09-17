@@ -16,12 +16,7 @@ El repositorio implementa en el mismo dominio dos stacks independientes:
 - PHP 8.4 (Vanilla)
 - Java 21 (Spring Boot adapters)
 
-Este repositorio incluye una implementación de referencia basada en un dominio de ejemplo para demostrar:
-
-- modelo conceptual compartido
-- contratos API consistentes
-- tests funcionales equivalentes
-- reglas arquitectónicas comunes
+El dominio WMS está en desarrollo en ambos stacks. Por ahora, las APIs exponen `GET /api/health` y las pruebas HTTP comprueban ese contrato compartido. La migración WMS define un esquema inicial, todavía sin casos de uso ni adaptadores que lo utilicen.
 
 ---
 
@@ -63,6 +58,7 @@ Ambas capas representan el mismo sistema desde distintos niveles de abstracción
 /docs
 /java
 /php
+```
 
 ---
 
@@ -107,8 +103,8 @@ cd java && mvn test
 
 | Stack  | URL                        |
 |--------|----------------------------|
-| PHP    | http://localhost:8081       |
-| Java   | http://localhost:8082       |
+| PHP    | http://localhost:8081/api/health |
+| Java   | http://localhost:8082/api/health |
 | DB     | postgresql://localhost:5432 |
 
 ### Detener

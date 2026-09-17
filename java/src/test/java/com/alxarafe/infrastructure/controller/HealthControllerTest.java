@@ -8,11 +8,12 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest(classes = HexagonalApplication.class)
 @AutoConfigureMockMvc
-class GreetingControllerTest {
+class HealthControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -26,11 +27,10 @@ class GreetingControllerTest {
     }
 
     @Test
-    void greetEndpoint() throws Exception {
-        mockMvc.perform(get("/api/greet").param("name", "Spring"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.message").value("Hello, Spring!"))
-                .andExpect(jsonPath("$.id").isNotEmpty())
-                .andExpect(jsonPath("$.createdAt").isNotEmpty());
+    void greetingEndpointsAreGone() throws Exception {
+        mockMvc.perform(get("/api/greet"))
+                .andExpect(status().isNotFound());
+        mockMvc.perform(get("/api/greetings"))
+                .andExpect(status().isNotFound());
     }
 }

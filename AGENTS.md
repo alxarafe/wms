@@ -2,7 +2,7 @@
 
 ## 1. Propósito y estado del proyecto
 
-Este repositorio es un proyecto incipiente de aprendizaje y experimentación para un sistema de gestión de almacenes (WMS). Parte de una plantilla de arquitectura hexagonal y contiene un dominio de ejemplo basado en saludos. Ese ejemplo demuestra la estructura técnica; no constituye todavía un dominio de almacén desarrollado.
+Este repositorio es un proyecto incipiente de aprendizaje y experimentación para un sistema de gestión de almacenes (WMS). Parte de una plantilla de arquitectura hexagonal. El ejemplo de saludos se retiró; las APIs exponen actualmente una comprobación de salud, mientras que el dominio WMS sigue en desarrollo y aún no cuenta con casos de uso HTTP.
 
 Se mantienen dos implementaciones independientes, PHP y Java, para contrastar un mismo modelo conceptual y comportamiento observable. No debe presentarse el proyecto como un WMS terminado ni como una plataforma lista para producción sin evidencia que lo respalde.
 

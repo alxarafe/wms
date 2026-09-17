@@ -18,7 +18,7 @@ class ArchitectureTest {
                 .consideringAllDependencies()
 
                 .layer("Domain").definedBy("..domain..")
-                .layer("Application").definedBy("..application..")
+                .optionalLayer("Application").definedBy("..application..")
                 .layer("Infrastructure").definedBy("..infrastructure..")
 
                 .whereLayer("Domain").mayOnlyBeAccessedByLayers("Application", "Infrastructure")

@@ -6,7 +6,7 @@ namespace Tests\Contract\Api;
 
 use PHPUnit\Framework\TestCase;
 
-final class GreetingApiTest extends TestCase
+final class HealthApiTest extends TestCase
 {
     private const PHP_BASE = 'http://php-app:80';
     private const JAVA_BASE = 'http://java-app:8080';
@@ -33,28 +33,13 @@ final class GreetingApiTest extends TestCase
         self::assertArrayHasKey('timestamp', $data);
     }
 
-    public function testPhpGreetEndpoint(): void
+    public function testGreetingEndpointsAreGoneInBothStacks(): void
     {
-        $this->skipIfUnreachable(self::PHP_BASE);
-        $response = $this->get(self::PHP_BASE . '/api/greet?name=PHP');
-        $data = json_decode($response, true);
-
-        self::assertIsArray($data);
-        self::assertSame('Hello, PHP!', $data['message']);
-        self::assertArrayHasKey('id', $data);
-        self::assertArrayHasKey('createdAt', $data);
-    }
-
-    public function testJavaGreetEndpoint(): void
-    {
-        $this->skipIfUnreachable(self::JAVA_BASE);
-        $response = $this->get(self::JAVA_BASE . '/api/greet?name=Java');
-        $data = json_decode($response, true);
-
-        self::assertIsArray($data);
-        self::assertSame('Hello, Java!', $data['message']);
-        self::assertArrayHasKey('id', $data);
-        self::assertArrayHasKey('createdAt', $data);
+        foreach ([self::PHP_BASE, self::JAVA_BASE] as $base) {
+            $this->skipIfUnreachable($base);
+            $this->get($base . '/api/greet', 404);
+            $this->get($base . '/api/greetings', 404);
+        }
     }
 
     private function skipIfUnreachable(string $baseUrl): void
@@ -73,7 +58,7 @@ final class GreetingApiTest extends TestCase
         fclose($sock);
     }
 
-    private function get(string $url): string
+    private function get(string $url, int $expectedStatus = 200): string
     {
         $ch = curl_init($url);
         curl_setopt_array($ch, [
@@ -87,7 +72,7 @@ final class GreetingApiTest extends TestCase
         curl_close($ch);
 
         self::assertIsString($result, "GET $url returned non-string");
-        self::assertSame(200, $httpCode, "GET $url returned $httpCode");
+        self::assertSame($expectedStatus, $httpCode, "GET $url returned $httpCode");
 
         return $result;
     }
