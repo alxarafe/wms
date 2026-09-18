@@ -40,8 +40,8 @@ jobs:
           distribution: temurin
           java-version: 21
 
-      - name: Create database table
-        run: PGPASSWORD=root psql -h localhost -U root -d database -f ../database/migrations/001_create_greetings_table.sql
+      - name: Apply WMS schema
+        run: PGPASSWORD=root psql -h localhost -U root -d database -v ON_ERROR_STOP=1 -f ../database/migrations/001_create_wms_schema.sql
 
       - name: Run tests
         run: mvn test
