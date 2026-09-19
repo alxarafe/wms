@@ -108,7 +108,7 @@ cd java && mvn test
 | Java   | http://localhost:8082/api/health |
 | DB     | postgresql://localhost:5432 |
 
-The `POST /api/item-families` contract is documented in [docs/architecture/item-family-api.md](docs/architecture/item-family-api.md). After the Bruno script runs, its PHP and Java test APIs are available at `http://localhost:28081` and `http://localhost:28082`.
+The `POST /api/item-families` contract is documented in [docs/architecture/item-family-api.md](docs/architecture/item-family-api.md). The `GET /api/warehouses/{id}/state` endpoint exposes the warehouse layout together with the stock located in each slot for the viewer; both stacks honour the same contract and the seed migration `002_seed_demo_data.sql` provides the demo warehouse with id `01a0aca9-bc00-7010-8000-000000000001`. After the Bruno script runs, its PHP and Java test APIs are available at `http://localhost:28081` and `http://localhost:28082`.
 
 ### Stop
 

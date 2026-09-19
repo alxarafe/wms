@@ -44,6 +44,55 @@ final class HealthApiTest extends TestCase
         }
     }
 
+    public function testPhpApiAllowsViteOrigin(): void
+    {
+        $base = getenv('PHP_BASE_URL') ?: self::PHP_BASE;
+        $this->skipIfUnreachable($base);
+        $headers = $this->getWithHeaders($base . '/api/health', ['Origin: http://localhost:5173'])['headers'];
+        self::assertSame('http://localhost:5173', $headers['access-control-allow-origin'] ?? null);
+    }
+
+    public function testPhpApiAnswersCorsPreflight(): void
+    {
+        $base = getenv('PHP_BASE_URL') ?: self::PHP_BASE;
+        $this->skipIfUnreachable($base);
+        $headers = $this->send(
+            $base . '/api/receipts',
+            204,
+            [
+                'Origin: http://localhost:5173',
+                'Access-Control-Request-Method: POST',
+            ],
+            'OPTIONS',
+        )['headers'];
+        self::assertSame('http://localhost:5173', $headers['access-control-allow-origin'] ?? null);
+        self::assertStringContainsString('POST', $headers['access-control-allow-methods'] ?? '');
+    }
+
+    public function testJavaApiAllowsViteOrigin(): void
+    {
+        $base = getenv('JAVA_BASE_URL') ?: self::JAVA_BASE;
+        $this->skipIfUnreachable($base);
+        $headers = $this->getWithHeaders($base . '/api/health', ['Origin: http://localhost:5173'])['headers'];
+        self::assertSame('http://localhost:5173', $headers['access-control-allow-origin'] ?? null);
+    }
+
+    public function testJavaApiAnswersCorsPreflight(): void
+    {
+        $base = getenv('JAVA_BASE_URL') ?: self::JAVA_BASE;
+        $this->skipIfUnreachable($base);
+        $headers = $this->send(
+            $base . '/api/receipts',
+            200,
+            [
+                'Origin: http://localhost:5173',
+                'Access-Control-Request-Method: POST',
+            ],
+            'OPTIONS',
+        )['headers'];
+        self::assertSame('http://localhost:5173', $headers['access-control-allow-origin'] ?? null);
+    }
+
     private function skipIfUnreachable(string $baseUrl): void
     {
         $host = parse_url($baseUrl, PHP_URL_HOST);
@@ -62,20 +111,54 @@ final class HealthApiTest extends TestCase
 
     private function get(string $url, int $expectedStatus = 200): string
     {
+        return $this->send($url, $expectedStatus)['body'];
+    }
+
+    /**
+     * @param list<string> $requestHeaders
+     * @return array{headers: array<string, string>, body: string}
+     */
+    private function getWithHeaders(string $url, array $requestHeaders = []): array
+    {
+        return $this->send($url, 200, $requestHeaders);
+    }
+
+    /**
+     * @param list<string> $requestHeaders
+     * @param non-empty-string $method
+     * @return array{headers: array<string, string>, body: string}
+     */
+    private function send(string $url, int $expectedStatus = 200, array $requestHeaders = [], string $method = 'GET'): array
+    {
         $ch = curl_init($url);
         curl_setopt_array($ch, [
             CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_HEADER => true,
             CURLOPT_TIMEOUT => 5,
-            CURLOPT_HTTPGET => true,
+            CURLOPT_NOBODY => $method === 'OPTIONS',
+            CURLOPT_CUSTOMREQUEST => $method,
+            CURLOPT_HTTPHEADER => $requestHeaders,
         ]);
 
         $result = curl_exec($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $headerSize = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
         curl_close($ch);
 
-        self::assertIsString($result, "GET $url returned non-string");
-        self::assertSame($expectedStatus, $httpCode, "GET $url returned $httpCode");
+        self::assertIsString($result, "$method $url returned non-string");
+        self::assertSame($expectedStatus, $httpCode, "$method $url returned $httpCode");
 
-        return $result;
+        $headerBlock = substr($result, 0, $headerSize);
+        $body = substr($result, $headerSize);
+
+        $headers = [];
+        foreach (explode("\r\n", $headerBlock) as $line) {
+            if (str_contains($line, ':')) {
+                [$name, $value] = explode(':', $line, 2);
+                $headers[strtolower(trim($name))] = trim($value);
+            }
+        }
+
+        return ['headers' => $headers, 'body' => $body];
     }
 }
