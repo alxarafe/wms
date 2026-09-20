@@ -29,6 +29,26 @@ final readonly class Sscc
         }
     }
 
+    public static function generate(): self
+    {
+        $digits = '3';
+        for ($i = 0; $i < 16; $i++) {
+            $digits .= (string) random_int(0, 9);
+        }
+
+        $sum = 0;
+        for ($i = 0; $i < 17; $i++) {
+            $digit = (int) $digits[$i];
+            $weight = ($i % 2 === 0) ? 3 : 1;
+            $sum += $digit * $weight;
+        }
+
+        $remainder = $sum % 10;
+        $checkDigit = ($remainder === 0) ? 0 : 10 - $remainder;
+
+        return new self($digits . $checkDigit);
+    }
+
     public function value(): string
     {
         return $this->value;

@@ -41,8 +41,8 @@ ok "Environment ready"
 echo ""
 
 echo -e "${BOLD}Services:${NC}"
-echo -e "  • PHP API:   ${CYAN}http://localhost:${PHP_HTTP_PORT:-8081}${NC}"
-echo -e "  • Java API:  ${CYAN}http://localhost:${JAVA_HTTP_PORT:-8082}${NC}"
+echo -e "  • PHP API:   ${CYAN}http://localhost:${PHP_HTTP_PORT:-28080}${NC}"
+echo -e "  • Java API:  ${CYAN}http://localhost:${JAVA_HTTP_PORT:-38080}${NC}"
 echo -e "  • Database:  ${CYAN}localhost:${POSTGRES_PORT:-5432}${NC}"
 
 echo ""

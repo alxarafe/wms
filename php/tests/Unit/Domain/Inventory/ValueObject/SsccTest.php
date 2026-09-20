@@ -52,4 +52,12 @@ final class SsccTest extends TestCase
         $sscc = new Sscc('123456789012345675');
         self::assertSame('123456789012345675', (string) $sscc);
     }
+
+    public function testGenerate(): void
+    {
+        $sscc = Sscc::generate();
+        self::assertMatchesRegularExpression('/^\d{18}$/', $sscc->value());
+        new Sscc($sscc->value());
+        self::assertNotSame($sscc->value(), Sscc::generate()->value());
+    }
 }

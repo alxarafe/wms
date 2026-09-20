@@ -38,4 +38,11 @@ class SsccTest {
         var sscc = new Sscc("123456789012345675");
         assertEquals("123456789012345675", sscc.toString());
     }
+
+    @Test
+    void generate() {
+        var first = Sscc.generate();
+        new Sscc(first.value());
+        assertNotEquals(first, Sscc.generate());
+    }
 }

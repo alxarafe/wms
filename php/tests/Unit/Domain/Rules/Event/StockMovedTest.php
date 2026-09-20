@@ -27,7 +27,8 @@ final class StockMovedTest extends TestCase
         self::assertTrue($id->equals($event->id()));
         self::assertSame(MovementType::TRANSFER, $event->type());
         self::assertTrue($huId->equals($event->huId()));
-        self::assertNotNull($event->fromLocationId());
+        self::assertInstanceOf(LocationId::class, $event->fromLocationId());
+        self::assertInstanceOf(LocationId::class, $event->toLocationId());
         self::assertTrue($from->equals($event->fromLocationId()));
         self::assertTrue($to->equals($event->toLocationId()));
         self::assertSame($now, $event->performedAt());
@@ -44,5 +45,19 @@ final class StockMovedTest extends TestCase
             new DateTimeImmutable(),
         );
         self::assertNull($event->fromLocationId());
+    }
+
+    public function testNullToLocationForOutbound(): void
+    {
+        $event = new StockMoved(
+            new StockMovementId('018e4e3a-3e7b-7b3e-8000-000000000001'),
+            MovementType::OUTBOUND,
+            new HandlingUnitId('018e4e3a-3e7b-7b3e-8000-000000000002'),
+            new LocationId('018e4e3a-3e7b-7b3e-8000-000000000003'),
+            null,
+            new DateTimeImmutable(),
+        );
+        self::assertNotNull($event->fromLocationId());
+        self::assertNull($event->toLocationId());
     }
 }

@@ -6,6 +6,8 @@ require __DIR__ . '/../vendor/autoload.php';
 
 use Alxarafe\App\Infrastructure\Http\CreateItemFamilyController;
 use Alxarafe\App\Infrastructure\Http\GetWarehouseStateController;
+use Alxarafe\App\Infrastructure\Http\PostIssuesController;
+use Alxarafe\App\Infrastructure\Http\PostReceiptsController;
 use flight\Engine;
 
 $corsAllowedOrigin = getenv('CORS_ALLOWED_ORIGIN') ?: 'http://localhost:5173';
@@ -46,5 +48,9 @@ $app->route('GET /api/health', function () use ($app) {
 $app->route('POST /api/item-families', new CreateItemFamilyController($app));
 
 $app->route('GET /api/warehouses/@id/state', new GetWarehouseStateController($app));
+
+$app->route('POST /api/receipts', new PostReceiptsController($app));
+
+$app->route('POST /api/issues', new PostIssuesController($app));
 
 $app->start();

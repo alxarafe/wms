@@ -105,7 +105,7 @@ final class HandlingUnitTest extends TestCase
         $hu = new HandlingUnit($this->id, $this->code, null, null, HuStatus::AVAILABLE);
         $itemId = new ItemId('018e4e3a-3e7b-7b3e-8000-000000000020');
         $quantId = new StockQuantId('018e4e3a-3e7b-7b3e-8000-000000000030');
-        $hu->addQuant($quantId, $itemId, null, new Quantity(10.0, 'EA'));
+        $hu->addQuant($quantId, $itemId, null, Quantity::fromDecimal(10.0, 'EA'));
 
         self::assertCount(1, $hu->quants());
     }
@@ -117,11 +117,11 @@ final class HandlingUnitTest extends TestCase
         $quantId1 = new StockQuantId('018e4e3a-3e7b-7b3e-8000-000000000030');
         $quantId2 = new StockQuantId('018e4e3a-3e7b-7b3e-8000-000000000031');
 
-        $hu->addQuant($quantId1, $itemId, null, new Quantity(10.0, 'EA'));
-        $hu->addQuant($quantId2, $itemId, null, new Quantity(5.0, 'EA'));
+        $hu->addQuant($quantId1, $itemId, null, Quantity::fromDecimal(10.0, 'EA'));
+        $hu->addQuant($quantId2, $itemId, null, Quantity::fromDecimal(5.0, 'EA'));
 
         self::assertCount(1, $hu->quants());
-        self::assertTrue((new Quantity(15.0, 'EA'))->equals($hu->quants()[0]->quantity()));
+        self::assertTrue((Quantity::fromDecimal(15.0, 'EA'))->equals($hu->quants()[0]->quantity()));
     }
 
     public function testAddQuantDifferentBatch(): void
@@ -131,8 +131,8 @@ final class HandlingUnitTest extends TestCase
         $batch1 = new BatchId('018e4e3a-3e7b-7b3e-8000-000000000040');
         $batch2 = new BatchId('018e4e3a-3e7b-7b3e-8000-000000000041');
 
-        $hu->addQuant(new StockQuantId('018e4e3a-3e7b-7b3e-8000-000000000030'), $itemId, $batch1, new Quantity(10.0, 'EA'));
-        $hu->addQuant(new StockQuantId('018e4e3a-3e7b-7b3e-8000-000000000031'), $itemId, $batch2, new Quantity(5.0, 'EA'));
+        $hu->addQuant(new StockQuantId('018e4e3a-3e7b-7b3e-8000-000000000030'), $itemId, $batch1, Quantity::fromDecimal(10.0, 'EA'));
+        $hu->addQuant(new StockQuantId('018e4e3a-3e7b-7b3e-8000-000000000031'), $itemId, $batch2, Quantity::fromDecimal(5.0, 'EA'));
 
         self::assertCount(2, $hu->quants());
     }

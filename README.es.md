@@ -16,7 +16,7 @@ El repositorio implementa en el mismo dominio dos stacks independientes:
 - PHP 8.4 (Vanilla)
 - Java 21 (Spring Boot adapters)
 
-El dominio WMS está en desarrollo en ambos stacks. Las APIs exponen `GET /api/health` y `POST /api/item-families`; este último crea familias con atributos de tipo `FAMILY` en PostgreSQL. La colección Bruno comprueba el mismo contrato en PHP y Java con bases de prueba independientes.
+El dominio WMS está en desarrollo en ambos stacks. Las APIs exponen `GET /api/health`, `POST /api/item-families`, `GET /api/warehouses/{id}/state`, `POST /api/receipts` y `POST /api/issues`. La creación de familias, el visor de estado y las operaciones de stock comparten un único contrato por endpoint entre PHP y Java, verificado con Bruno contra bases de prueba independientes.
 
 ---
 
@@ -54,6 +54,7 @@ Ambas capas representan el mismo sistema desde distintos niveles de abstracción
 ```text
 /api-tests
 /bin
+/client
 /docker
 /docs
 /java
@@ -81,6 +82,7 @@ Ambas capas representan el mismo sistema desde distintos niveles de abstracción
 ./bin/php_test.sh     # PHPUnit (unitarios + integración + contrato)
 ./bin/java_test.sh    # Maven (unitarios + arquitectura)
 ./bin/bruno_families_test.sh  # APIs + Bruno en dos bases aisladas; requiere PostgreSQL arrancado
+./bin/bruno_operations_test.sh  # Escenario de paridad de entradas/salidas en bases aisladas
 
 # Pipeline completo:
 ./bin/ci_local.sh     # Tests PHP + tests Java
@@ -104,11 +106,19 @@ cd java && mvn test
 
 | Stack  | URL                        |
 |--------|----------------------------|
-| PHP    | http://localhost:8081/api/health |
-| Java   | http://localhost:8082/api/health |
+| PHP    | http://localhost:28080/api/health |
+| Java   | http://localhost:38080/api/health |
 | DB     | postgresql://localhost:5432 |
 
-El contrato de `POST /api/item-families` se describe en [docs/architecture/item-family-api.md](docs/architecture/item-family-api.md). Las APIs de prueba Bruno se consultan en `http://localhost:28081` (PHP) y `http://localhost:28082` (Java) tras ejecutar el script.
+El contrato de `POST /api/item-families` se describe en [docs/architecture/item-family-api.md](docs/architecture/item-family-api.md). El visor consume `GET /api/warehouses/{id}/state`, que devuelve la topología y el stock ubicado de un almacén con el mismo contrato en ambos stacks; la migración `002_seed_demo_data.sql` siembra el almacén de demostración con id `01a0aca9-bc00-7010-8000-000000000001`. Las entradas y salidas (`POST /api/receipts` y `POST /api/issues`) siguen el modelo discreto (1 HU por hueco, HU monoreferencia y consumo completo en la salida) descrito en [docs/architecture/stock-operations-api.md](docs/architecture/stock-operations-api.md); el mismo escenario se ejecuta contra ambas APIs en `api-tests/bruno/operations/`. Las APIs de prueba Bruno se consultan en `http://localhost:28081` (PHP) y `http://localhost:28082` (Java) tras ejecutar el script.
+
+### Cliente de demostración
+
+Un cliente de demostración vive en `client/` (Svelte + Vite): pinta una calle con su mercancía, realiza entradas y salidas y alterna entre modos simulado, PHP y Java. Solo consume las APIs HTTP; no accede a la base de datos.
+
+```bash
+cd client && npm install && npm run dev   # http://localhost:5173
+```
 
 ### Detener
 

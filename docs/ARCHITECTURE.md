@@ -123,7 +123,7 @@ Definido en `java/src/test/java/com/alxarafe/ArchitectureTest.java`:
 
 ## Consistencia del contrato de API
 
-Ambos stacks exponen `GET /api/health` y `POST /api/item-families`. Las pruebas de contrato en `php/tests/Contract/` comprueban el estado de salud; la colección Bruno en `api-tests/bruno/families/` comprueba las cinco altas de familias y los errores de duplicado y atributo incompatible en ambas APIs. El contrato de creación y sus bases de prueba aisladas se detallan en [API de creación de familias](architecture/item-family-api.md).
+Ambos stacks exponen `GET /api/health`, `POST /api/item-families`, `GET /api/warehouses/{id}/state`, `POST /api/receipts` y `POST /api/issues`. Las pruebas de contrato en `php/tests/Contract/` comprueban el estado de salud; la colección Bruno en `api-tests/bruno/families/` comprueba las cinco altas de familias y los errores de duplicado y atributo incompatible en ambas APIs. El contrato de creación y sus bases de prueba aisladas se detallan en [API de creación de familias](architecture/item-family-api.md); el contrato de entrada y salida de stock (estados HTTP, precisión de cantidades M5, semántica de `stock_movement` M6 y resolución provisional M3) en [API de operaciones de stock](architecture/stock-operations-api.md).
 
 ## Pirámide de pruebas
 
@@ -144,8 +144,8 @@ Servicios definidos en `docker-compose.yml`:
 
 | Servicio | Contenedor | Puerto | Propósito |
 |----------|-----------|--------|-----------|
-| `php-app` | PHP 8.4 (Apache) | 8081 | API HTTP PHP |
-| `java-app` | Java 21 (Temurin) | 8082 | API HTTP Java |
+| `php-app` | PHP 8.4 (Apache) | 28080 | API HTTP PHP |
+| `java-app` | Java 21 (Temurin) | 38080 | API HTTP Java |
 | `database` | PostgreSQL 16 | 5432 | Base de datos compartida |
 
 ## Cómo añadir una nueva funcionalidad

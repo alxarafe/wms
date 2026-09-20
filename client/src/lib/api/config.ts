@@ -1,8 +1,8 @@
 export type ApiMode = 'mock' | 'php' | 'java';
 
 export const API_BASE_URLS: Record<'php' | 'java', string> = {
-  php: 'http://localhost:8081',
-  java: 'http://localhost:8082',
+  php: 'http://localhost:28080',
+  java: 'http://localhost:38080',
 };
 
 // Almacén sembrado por database/migrations/002_seed_demo_data.sql.

@@ -65,7 +65,7 @@ class CompatibilityCheckerTest {
                 new StockQuantId(quantIdStr),
                 new ItemId(itemIdStr),
                 null,
-                new Quantity(1.0, "EA"));
+                Quantity.fromDecimal(1.0, "EA"));
         return hu;
     }
 
@@ -140,7 +140,7 @@ class CompatibilityCheckerTest {
         var itemId2 = "018e4e3a-3e7b-7b3e-8000-000000000101";
         hu.addQuant(
                 new StockQuantId("018e4e3a-3e7b-7b3e-8000-000000000031"),
-                new ItemId(itemId2), null, new Quantity(2.0, "EA"));
+                new ItemId(itemId2), null, Quantity.fromDecimal(2.0, "EA"));
 
         var itemFamilyAttrs = Map.of(
                 "018e4e3a-3e7b-7b3e-8000-000000000100", List.of(coldAttr),

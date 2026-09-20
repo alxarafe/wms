@@ -88,7 +88,7 @@
     show(
       mode === 'mock'
         ? 'Modo simulado: el estado y las operaciones se atienden localmente.'
-        : `Conectando a la API ${mode.toUpperCase()} (${mode === 'php' ? ':8081' : ':8082'}).`, 
+        : `Conectando a la API ${mode.toUpperCase()} (${mode === 'php' ? ':28080' : ':38080'}).`, 
       'info',
     );
     void reload();

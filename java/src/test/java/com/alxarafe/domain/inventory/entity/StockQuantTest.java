@@ -17,7 +17,7 @@ class StockQuantTest {
         var id = new StockQuantId("018e4e3a-3e7b-7b3e-8000-000000000001");
         var huId = new HandlingUnitId("018e4e3a-3e7b-7b3e-8000-000000000002");
         var itemId = new ItemId("018e4e3a-3e7b-7b3e-8000-000000000003");
-        var qty = new Quantity(10.0, "EA");
+        var qty = Quantity.fromDecimal(10.0, "EA");
         var quant = new StockQuant(id, huId, itemId, null, qty);
 
         assertEquals(id, quant.id());
@@ -35,7 +35,7 @@ class StockQuantTest {
                 new HandlingUnitId("018e4e3a-3e7b-7b3e-8000-000000000002"),
                 new ItemId("018e4e3a-3e7b-7b3e-8000-000000000003"),
                 batchId,
-                new Quantity(5.0, "EA"));
+                Quantity.fromDecimal(5.0, "EA"));
         assertEquals(batchId, quant.batchId().orElseThrow());
     }
 
@@ -46,9 +46,9 @@ class StockQuantTest {
                 new HandlingUnitId("018e4e3a-3e7b-7b3e-8000-000000000002"),
                 new ItemId("018e4e3a-3e7b-7b3e-8000-000000000003"),
                 null,
-                new Quantity(10.0, "EA"));
-        quant.add(new Quantity(5.0, "EA"));
-        assertEquals(new Quantity(15.0, "EA"), quant.quantity());
+                Quantity.fromDecimal(10.0, "EA"));
+        quant.add(Quantity.fromDecimal(5.0, "EA"));
+        assertEquals(Quantity.fromDecimal(15.0, "EA"), quant.quantity());
     }
 
     @Test
@@ -58,8 +58,8 @@ class StockQuantTest {
                 new HandlingUnitId("018e4e3a-3e7b-7b3e-8000-000000000002"),
                 new ItemId("018e4e3a-3e7b-7b3e-8000-000000000003"),
                 null,
-                new Quantity(10.0, "EA"));
-        quant.subtract(new Quantity(3.0, "EA"));
-        assertEquals(new Quantity(7.0, "EA"), quant.quantity());
+                Quantity.fromDecimal(10.0, "EA"));
+        quant.subtract(Quantity.fromDecimal(3.0, "EA"));
+        assertEquals(Quantity.fromDecimal(7.0, "EA"), quant.quantity());
     }
 }

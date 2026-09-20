@@ -57,7 +57,7 @@ No se añade ninguna columna de capacidad a `location`. La regla "1 HU por hueco
 ### 4.2 Dependencias con carencias ya detectadas
 
 - `stock_quant.unit` es VARCHAR libre y no referencia `uom`; al no depender la ocupación de cantidades, solo es información, pero conviene resolver la carencia antes de dar por válido el dato como trazable.
-- Precisión de cantidades (NUMERIC(18,6) en BD frente a float/double en dominio) y política ante consumo completo: deben fijarse antes de implementar entrada/salida (decisión M5). Afecta a la cantidad por HU, no a la ocupación del hueco.
+- Precisión de cantidades (NUMERIC(18,6) en BD frente a float/double en dominio) y política ante consumo completo: **resueltas en la decisión M5** (ver § 5 y `docs/architecture/stock-operations-api.md`). Afecta a la cantidad por HU, no a la ocupación del hueco.
 
 ### 4.3 Contrato del endpoint de estado
 
@@ -81,12 +81,14 @@ Estos casos pasan a formar parte de la colección Bruno-contrato (ver `api-tests
 
 ## 5. Relación con decisiones pendientes del dominio
 
-| Pendiente | Impacto en este modelo |
-| --- | --- |
-| `RuleScope` AISLE/ZONE (M2) | No afecta al modelo de capacidad; define cuándo una entrada es o no compatible entre mercancías. **Pendiente** para los escenarios de coexistencia |
-| Herencia de bloqueo de pasillo (M3) | El visor pinta `BLOQUEADO` si `location.status` lo es; queda pendiente si `aisle.is_blocked` debe heredarse a sus huecos |
-| Precisión y consumo completo (M5) | Afecta a la cantidad por HU y a la semántica de salida. **Pendiente**, bloquea el contrato de entrada/salida |
-| Semántica de `stock_movement` por tipo (M6) | Define `from_location_id`/`to_location_id` para OUTBOUND. **Pendiente**, bloquea el contrato de salida |
+| Pendiente | Impacto en este modelo | Estado |
+| --- | --- | --- |
+| `RuleScope` AISLE/ZONE (M2) | No afecta al modelo de capacidad; define cuándo una entrada es o no compatible entre mercancías. **Pendiente** para los escenarios de coexistencia | Pendiente |
+| Herencia de bloqueo de pasillo (M3) | El visor y las operaciones consideran un hueco no disponible si `location.status != 'ACTIVE'` o el pasillo está bloqueado (`aisle.is_blocked`). Esta herencia se ha adoptado provisionalmente y de forma consistente entre el visor y las operaciones de entrada/salida | Resuelta provisionalmente (M3) |
+| Precisión y consumo completo (M5) | Cantidad interna como entero escalado 10⁻⁶ (PHP `int`, Java `long`); coma flotante solo en la frontera (redondeo HALF_UP). La salida exige por ahora el total de la HU (sin salida parcial). Implementada en SQL NUMERIC(18,6) | Resuelta (M5) |
+| Semántica de `stock_movement` por tipo (M6) | OUTBOUND registra `from_location_id` no nula y `to_location_id` nula; INBOUND a la inversa; TRANSFER ambas no nulas y distintas; ADJUSTMENT ambas nulas (constraint `ck_stock_movement_directions`, migración 003). La salida borra el `stock_quant` y desvincula la HU (histórica), dejando el hueco vacío | Resuelta (M6) |
+
+Detalle operativo de las resoluciones M3, M5 y M6 en `docs/architecture/stock-operations-api.md`.
 
 ## 6. Opciones documentadas para producción (no implementadas)
 
@@ -138,7 +140,9 @@ Se registran como referencia oficial; ninguna se implementa en el ejercicio salv
 
 - `docs/domain/README.md` y `docs/architecture/README.md` (índices generales).
 - `docs/architecture/item-family-api.md` (patrón de contrato API por endpoint).
+- `docs/architecture/stock-operations-api.md` (contrato de entrada/salida: endpoints, estados HTTP y resoluciones M3/M5/M6).
 - `database/migrations/001_create_wms_schema.sql` (esquema actual; `location` no tiene columna de capacidad).
+- `database/migrations/003_allow_outbound_movements.sql` (decisión M6 en esquema).
 - `private/auditoria-2026-09-17/informe.md` (decisiones pendientes M2, M3, M5, M6).
 - `private/auditoria-2026-09-17/escenarios-api-y-visor-wms.md` (propuesta de escenarios y rutas para el visor).
 - `private/04 Cliente de almacén - Propuesta y dudas.md` (análisis del cliente y dudas de implementación).

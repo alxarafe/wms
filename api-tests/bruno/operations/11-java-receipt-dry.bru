@@ -1,0 +1,37 @@
+meta {
+  name: Java - entrada DRY 40 EA
+  type: http
+  seq: 11
+}
+
+post {
+  url: {{java_base_url}}/api/receipts
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  Accept: application/json
+}
+
+body:json {
+  {
+    "locationId": "01a0aca9-bc00-7020-8000-000000000007",
+    "itemCode": "DRY",
+    "quantity": 40,
+    "unit": "EA"
+  }
+}
+
+tests {
+  test("Java recibe y ocupa el hueco P-A-04-01 con DRY 40 EA", function () {
+    expect(res.getStatus()).to.equal(201);
+    expect(res.getBody().code).to.equal("P-A-04-01");
+    expect(res.getBody().references.length).to.equal(1);
+    expect(res.getBody().references[0].itemCode).to.equal("DRY");
+    expect(res.getBody().references[0].quantity).to.equal(40);
+    expect(res.getBody().references[0].unit).to.equal("EA");
+    expect(res.getBody().references[0].huCode).to.match(/^3\d{17}$/);
+  });
+}

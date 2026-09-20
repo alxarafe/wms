@@ -93,7 +93,7 @@ class HandlingUnitTest {
         var hu = new HandlingUnit(id, code, null, null, HuStatus.AVAILABLE);
         var itemId = new ItemId("018e4e3a-3e7b-7b3e-8000-000000000020");
         var quantId = new StockQuantId("018e4e3a-3e7b-7b3e-8000-000000000030");
-        hu.addQuant(quantId, itemId, null, new Quantity(10.0, "EA"));
+        hu.addQuant(quantId, itemId, null, Quantity.fromDecimal(10.0, "EA"));
         assertEquals(1, hu.quants().size());
     }
 
@@ -101,10 +101,10 @@ class HandlingUnitTest {
     void addQuantMergesSameItemBatch() {
         var hu = new HandlingUnit(id, code, null, null, HuStatus.AVAILABLE);
         var itemId = new ItemId("018e4e3a-3e7b-7b3e-8000-000000000020");
-        hu.addQuant(new StockQuantId("018e4e3a-3e7b-7b3e-8000-000000000030"), itemId, null, new Quantity(10.0, "EA"));
-        hu.addQuant(new StockQuantId("018e4e3a-3e7b-7b3e-8000-000000000031"), itemId, null, new Quantity(5.0, "EA"));
+        hu.addQuant(new StockQuantId("018e4e3a-3e7b-7b3e-8000-000000000030"), itemId, null, Quantity.fromDecimal(10.0, "EA"));
+        hu.addQuant(new StockQuantId("018e4e3a-3e7b-7b3e-8000-000000000031"), itemId, null, Quantity.fromDecimal(5.0, "EA"));
         assertEquals(1, hu.quants().size());
-        assertEquals(new Quantity(15.0, "EA"), hu.quants().getFirst().quantity());
+        assertEquals(Quantity.fromDecimal(15.0, "EA"), hu.quants().getFirst().quantity());
     }
 
     @Test
@@ -113,8 +113,8 @@ class HandlingUnitTest {
         var itemId = new ItemId("018e4e3a-3e7b-7b3e-8000-000000000020");
         var batch1 = new BatchId("018e4e3a-3e7b-7b3e-8000-000000000040");
         var batch2 = new BatchId("018e4e3a-3e7b-7b3e-8000-000000000041");
-        hu.addQuant(new StockQuantId("018e4e3a-3e7b-7b3e-8000-000000000030"), itemId, batch1, new Quantity(10.0, "EA"));
-        hu.addQuant(new StockQuantId("018e4e3a-3e7b-7b3e-8000-000000000031"), itemId, batch2, new Quantity(5.0, "EA"));
+        hu.addQuant(new StockQuantId("018e4e3a-3e7b-7b3e-8000-000000000030"), itemId, batch1, Quantity.fromDecimal(10.0, "EA"));
+        hu.addQuant(new StockQuantId("018e4e3a-3e7b-7b3e-8000-000000000031"), itemId, batch2, Quantity.fromDecimal(5.0, "EA"));
         assertEquals(2, hu.quants().size());
     }
 }

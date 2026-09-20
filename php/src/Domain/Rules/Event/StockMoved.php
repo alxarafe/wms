@@ -20,7 +20,7 @@ final readonly class StockMoved
         private MovementType $type,
         private HandlingUnitId $huId,
         private ?LocationId $fromLocationId,
-        private LocationId $toLocationId,
+        private ?LocationId $toLocationId,
         private DateTimeImmutable $performedAt,
     ) {
     }
@@ -45,7 +45,7 @@ final readonly class StockMoved
         return $this->fromLocationId;
     }
 
-    public function toLocationId(): LocationId
+    public function toLocationId(): ?LocationId
     {
         return $this->toLocationId;
     }

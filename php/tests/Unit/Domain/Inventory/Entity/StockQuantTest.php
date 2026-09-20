@@ -19,7 +19,7 @@ final class StockQuantTest extends TestCase
         $id = new StockQuantId('018e4e3a-3e7b-7b3e-8000-000000000001');
         $huId = new HandlingUnitId('018e4e3a-3e7b-7b3e-8000-000000000002');
         $itemId = new ItemId('018e4e3a-3e7b-7b3e-8000-000000000003');
-        $qty = new Quantity(10.0, 'EA');
+        $qty = Quantity::fromDecimal(10.0, 'EA');
         $quant = new StockQuant($id, $huId, $itemId, null, $qty);
 
         self::assertTrue($id->equals($quant->id()));
@@ -37,7 +37,7 @@ final class StockQuantTest extends TestCase
             new HandlingUnitId('018e4e3a-3e7b-7b3e-8000-000000000002'),
             new ItemId('018e4e3a-3e7b-7b3e-8000-000000000003'),
             $batchId,
-            new Quantity(5.0, 'EA'),
+            Quantity::fromDecimal(5.0, 'EA'),
         );
         self::assertNotNull($quant->batchId());
         self::assertTrue($batchId->equals($quant->batchId()));
@@ -50,10 +50,10 @@ final class StockQuantTest extends TestCase
             new HandlingUnitId('018e4e3a-3e7b-7b3e-8000-000000000002'),
             new ItemId('018e4e3a-3e7b-7b3e-8000-000000000003'),
             null,
-            new Quantity(10.0, 'EA'),
+            Quantity::fromDecimal(10.0, 'EA'),
         );
-        $quant->add(new Quantity(5.0, 'EA'));
-        self::assertTrue((new Quantity(15.0, 'EA'))->equals($quant->quantity()));
+        $quant->add(Quantity::fromDecimal(5.0, 'EA'));
+        self::assertTrue((Quantity::fromDecimal(15.0, 'EA'))->equals($quant->quantity()));
     }
 
     public function testSubtract(): void
@@ -63,9 +63,9 @@ final class StockQuantTest extends TestCase
             new HandlingUnitId('018e4e3a-3e7b-7b3e-8000-000000000002'),
             new ItemId('018e4e3a-3e7b-7b3e-8000-000000000003'),
             null,
-            new Quantity(10.0, 'EA'),
+            Quantity::fromDecimal(10.0, 'EA'),
         );
-        $quant->subtract(new Quantity(3.0, 'EA'));
-        self::assertTrue((new Quantity(7.0, 'EA'))->equals($quant->quantity()));
+        $quant->subtract(Quantity::fromDecimal(3.0, 'EA'));
+        self::assertTrue((Quantity::fromDecimal(7.0, 'EA'))->equals($quant->quantity()));
     }
 }

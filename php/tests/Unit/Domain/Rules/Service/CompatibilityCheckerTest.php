@@ -70,7 +70,7 @@ final class CompatibilityCheckerTest extends TestCase
             new StockQuantId($quantIdStr ?? '018e4e3a-3e7b-7b3e-8000-000000000030'),
             new ItemId($itemIdStr),
             null,
-            new Quantity(1.0, 'EA'),
+            Quantity::fromDecimal(1.0, 'EA'),
         );
         return $hu;
     }
@@ -175,7 +175,7 @@ final class CompatibilityCheckerTest extends TestCase
             new StockQuantId('018e4e3a-3e7b-7b3e-8000-000000000031'),
             new ItemId($itemId2),
             null,
-            new Quantity(2.0, 'EA'),
+            Quantity::fromDecimal(2.0, 'EA'),
         );
 
         $itemFamilyAttrs = [

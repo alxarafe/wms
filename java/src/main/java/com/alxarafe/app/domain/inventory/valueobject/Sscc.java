@@ -28,6 +28,26 @@ public record Sscc(String value) {
         return value;
     }
 
+    public static Sscc generate() {
+        java.security.SecureRandom random = new java.security.SecureRandom();
+        StringBuilder digits = new StringBuilder("3");
+        for (int i = 0; i < 16; i++) {
+            digits.append(random.nextInt(10));
+        }
+
+        int sum = 0;
+        for (int i = 0; i < 17; i++) {
+            int digit = Character.getNumericValue(digits.charAt(i));
+            int weight = (i % 2 == 0) ? 3 : 1;
+            sum += digit * weight;
+        }
+
+        int remainder = sum % 10;
+        int checkDigit = (remainder == 0) ? 0 : 10 - remainder;
+
+        return new Sscc(digits.append(checkDigit).toString());
+    }
+
     private static boolean validateCheckDigit(String sscc) {
         int sum = 0;
         // The first 17 digits are used for calculation

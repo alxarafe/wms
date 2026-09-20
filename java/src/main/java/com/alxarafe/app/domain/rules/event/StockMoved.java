@@ -27,8 +27,21 @@ public final class StockMoved {
         this.type = Objects.requireNonNull(type, "StockMoved type cannot be null.");
         this.huId = Objects.requireNonNull(huId, "StockMoved huId cannot be null.");
         this.fromLocationId = fromLocationId; // Can be null for inbound movements
-        this.toLocationId = Objects.requireNonNull(toLocationId, "StockMoved toLocationId cannot be null.");
+        this.toLocationId = toLocationId; // Can be null for outbound movements
         this.performedAt = Objects.requireNonNull(performedAt, "StockMoved performedAt cannot be null.");
+        if (!directionMatchesType(type, fromLocationId, toLocationId)) {
+            throw new IllegalArgumentException("Direction does not match movement type " + type);
+        }
+    }
+
+    private static boolean directionMatchesType(MovementType type,
+                                                LocationId fromLocationId, LocationId toLocationId) {
+        return switch (type) {
+            case INBOUND -> fromLocationId == null && toLocationId != null;
+            case OUTBOUND -> fromLocationId != null && toLocationId == null;
+            case TRANSFER -> fromLocationId != null && toLocationId != null;
+            case ADJUSTMENT -> fromLocationId == null && toLocationId == null;
+        };
     }
 
     public StockMovementId id() {
@@ -47,8 +60,8 @@ public final class StockMoved {
         return Optional.ofNullable(fromLocationId);
     }
 
-    public LocationId toLocationId() {
-        return toLocationId;
+    public Optional<LocationId> toLocationId() {
+        return Optional.ofNullable(toLocationId);
     }
 
     public Instant performedAt() {
