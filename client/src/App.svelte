@@ -9,11 +9,13 @@
     WarehouseState,
   } from './lib/api/types';
   import AisleView from './lib/components/AisleView.svelte';
+  import CatalogPanel from './lib/components/CatalogPanel.svelte';
   import OperationPanel from './lib/components/OperationPanel.svelte';
 
   let warehouse: WarehouseState | null = $state(null);
   let selectedAisleCode = $state('');
   let selectedLocationId: string | null = $state(null);
+  let view = $state<'warehouse' | 'catalogue'>('warehouse');
   let message = $state('');
   let messageKind: 'success' | 'failure' | 'info' = $state('info');
 
@@ -103,6 +105,14 @@
     }
   }
 
+  function handleCatalogResult(result: OperationResult<unknown>): void {
+    if (result.ok) {
+      show('Catálogo actualizado.', 'success');
+    } else {
+      show(`${result.status}: ${result.error}`, 'failure');
+    }
+  }
+
   function onSelectLocation(location: LocationState): void {
     selectedLocationId = location.id;
   }
@@ -141,32 +151,46 @@
   {/if}
 
   <div class="toolbar">
-    <label class="aisle-picker">
-      <span>Calle</span>
-      <select bind:value={selectedAisleCode}>
-        {#each aisles as aisle}
-          <option value={aisle.code}>{aisle.label}</option>
-        {/each}
-      </select>
-    </label>
+    <div class="view-tabs">
+      <button class={view === 'warehouse' ? 'active' : ''} onclick={() => (view = 'warehouse')}>
+        Almacén
+      </button>
+      <button class={view === 'catalogue' ? 'active' : ''} onclick={() => (view = 'catalogue')}>
+        Catálogo
+      </button>
+    </div>
+    {#if view === 'warehouse'}
+      <label class="aisle-picker">
+        <span>Calle</span>
+        <select bind:value={selectedAisleCode}>
+          {#each aisles as aisle}
+            <option value={aisle.code}>{aisle.label}</option>
+          {/each}
+        </select>
+      </label>
+    {/if}
   </div>
 
-  <div class="layout">
-    <div class="main-col">
-      {#if currentAisleState}
-        <AisleView
-          aisle={currentAisleState}
-          selectedLocationId={selectedLocationId}
-          onSelect={onSelectLocation}
-        />
-      {:else}
-        <p class="empty">Selecciona una calle para ver su estado.</p>
-      {/if}
+  {#if view === 'catalogue'}
+    <CatalogPanel onResult={handleCatalogResult} />
+  {:else}
+    <div class="layout">
+      <div class="main-col">
+        {#if currentAisleState}
+          <AisleView
+            aisle={currentAisleState}
+            selectedLocationId={selectedLocationId}
+            onSelect={onSelectLocation}
+          />
+        {:else}
+          <p class="empty">Selecciona una calle para ver su estado.</p>
+        {/if}
+      </div>
+      <div class="side-col">
+        <OperationPanel location={selectedLocation} onResult={handleOperationResult} />
+      </div>
     </div>
-    <div class="side-col">
-      <OperationPanel location={selectedLocation} onResult={handleOperationResult} />
-    </div>
-  </div>
+  {/if}
 </main>
 
 <style>
@@ -245,6 +269,28 @@
 
   .toolbar {
     display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .view-tabs {
+    display: flex;
+    gap: 8px;
+  }
+
+  .view-tabs button {
+    padding: 8px 16px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface);
+  }
+
+  .view-tabs button.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: white;
   }
 
   .aisle-picker {

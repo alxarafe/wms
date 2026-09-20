@@ -5,6 +5,7 @@ declare(strict_types=1);
 require __DIR__ . '/../vendor/autoload.php';
 
 use Alxarafe\App\Infrastructure\Http\CreateItemFamilyController;
+use Alxarafe\App\Infrastructure\Http\GetItemFamiliesController;
 use Alxarafe\App\Infrastructure\Http\GetWarehouseStateController;
 use Alxarafe\App\Infrastructure\Http\PostIssuesController;
 use Alxarafe\App\Infrastructure\Http\PostReceiptsController;
@@ -46,6 +47,8 @@ $app->route('GET /api/health', function () use ($app) {
 });
 
 $app->route('POST /api/item-families', new CreateItemFamilyController($app));
+
+$app->route('GET /api/item-families', new GetItemFamiliesController($app));
 
 $app->route('GET /api/warehouses/@id/state', new GetWarehouseStateController($app));
 

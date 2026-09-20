@@ -10,6 +10,8 @@ use Alxarafe\App\Domain\Catalogue\ValueObject\ItemFamilyCode;
 use Alxarafe\App\Domain\Catalogue\ValueObject\ItemFamilyId;
 use Alxarafe\App\Domain\Rules\ValueObject\AttributeCode;
 use PDO;
+use PDOStatement;
+use RuntimeException;
 use Throwable;
 
 final readonly class PdoItemFamilyRepository implements ItemFamilyRepository
@@ -20,23 +22,52 @@ final readonly class PdoItemFamilyRepository implements ItemFamilyRepository
 
     public function findByCode(ItemFamilyCode $code): ?ItemFamily
     {
-        $statement = $this->pdo->prepare('SELECT id, code, name FROM item_family WHERE code = :code');
-        $statement->execute(['code' => $code->value()]);
-        $row = $statement->fetch(PDO::FETCH_ASSOC);
-        if (!is_array($row)) {
-            return null;
-        }
-
-        $attributes = $this->pdo->prepare(
-            'SELECT a.code FROM attribute a JOIN item_family_attribute fa ON fa.attribute_id = a.id '
-            . 'WHERE fa.item_family_id = :id ORDER BY a.code'
+        $row = $this->fetch(
+            'SELECT id, code, name FROM item_family WHERE code = :code',
+            ['code' => $code->value()],
         );
-        $attributes->execute(['id' => $row['id']]);
+        return $row === null ? null : $this->hydrate($row);
+    }
+
+    /** @return list<ItemFamily> */
+    public function findAll(): array
+    {
+        $rows = $this->statement('SELECT id, code, name FROM item_family ORDER BY code')->fetchAll(PDO::FETCH_ASSOC);
+        return array_values(array_map(fn (array $row): ItemFamily => $this->hydrate($row), $rows));
+    }
+
+    /** @param array<string, scalar> $params
+     *  @return array<string, string>|null
+     */
+    private function fetch(string $sql, array $params): ?array
+    {
+        $statement = $this->statement($sql, $params)->fetch(PDO::FETCH_ASSOC);
+        return is_array($statement) ? $statement : null;
+    }
+
+    /** @param array<string, string> $row */
+    private function hydrate(array $row): ItemFamily
+    {
         $codes = array_map(
             static fn (string $value): AttributeCode => new AttributeCode($value),
-            array_values($attributes->fetchAll(PDO::FETCH_COLUMN)),
+            array_values($this->statement(
+                'SELECT a.code FROM attribute a JOIN item_family_attribute fa ON fa.attribute_id = a.id '
+                . 'WHERE fa.item_family_id = :id ORDER BY a.code',
+                ['id' => $row['id']],
+            )->fetchAll(PDO::FETCH_COLUMN)),
         );
         return new ItemFamily(new ItemFamilyId($row['id']), new ItemFamilyCode($row['code']), $row['name'], $codes);
+    }
+
+    /** @param array<string, scalar> $params */
+    private function statement(string $sql, array $params = []): PDOStatement
+    {
+        $statement = $this->pdo->prepare($sql);
+        if ($statement === false) {
+            throw new RuntimeException('Unable to prepare statement.');
+        }
+        $statement->execute($params);
+        return $statement;
     }
 
     public function availableFamilyAttributes(array $codes): array

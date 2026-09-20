@@ -54,6 +54,19 @@ export interface WarehouseState {
   zones: ZoneState[];
 }
 
+export interface CreateItemFamilyRequest {
+  code: string;
+  name: string;
+  attributes: string[];
+}
+
+export interface ItemFamily {
+  id: string;
+  code: string;
+  name: string;
+  attributes: string[];
+}
+
 export interface ReceiptRequest {
   locationId: string;
   itemCode: string;

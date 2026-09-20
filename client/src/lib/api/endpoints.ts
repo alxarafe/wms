@@ -1,12 +1,15 @@
 import { apiMode } from './config';
 import { httpCall } from './client';
+import { mockCreateItemFamily, mockFetchItemFamilies } from '../mocks/catalogue';
 import {
   mockFetchWarehouseState,
   mockSubmitIssue,
   mockSubmitReceipt,
 } from '../mocks/warehouse';
 import type {
+  CreateItemFamilyRequest,
   IssueRequest,
+  ItemFamily,
   LocationState,
   OperationResult,
   ReceiptRequest,
@@ -21,6 +24,20 @@ export async function fetchWarehouseState(warehouseId: string): Promise<Operatio
     return mockFetchWarehouseState(warehouseId);
   }
   return httpCall<WarehouseState>(`/api/warehouses/${warehouseId}/state`, { method: 'GET' });
+}
+
+export async function fetchItemFamilies(): Promise<OperationResult<ItemFamily[]>> {
+  if (apiMode === 'mock') {
+    return mockFetchItemFamilies();
+  }
+  return httpCall<ItemFamily[]>('/api/item-families', { method: 'GET' });
+}
+
+export async function createItemFamily(request: CreateItemFamilyRequest): Promise<OperationResult<ItemFamily>> {
+  if (apiMode === 'mock') {
+    return mockCreateItemFamily(request);
+  }
+  return httpCall<ItemFamily>('/api/item-families', { method: 'POST', body: request });
 }
 
 export async function submitReceipt(request: ReceiptRequest): Promise<OperationResult<LocationState>> {

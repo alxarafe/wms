@@ -12,6 +12,9 @@ interface ItemFamilyRepository
 {
     public function findByCode(ItemFamilyCode $code): ?ItemFamily;
 
+    /** @return list<ItemFamily> */
+    public function findAll(): array;
+
     /** @param list<AttributeCode> $codes
      *  @return list<string>
      */

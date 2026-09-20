@@ -10,6 +10,8 @@ import java.util.Optional;
 public interface ItemFamilyRepository {
     Optional<ItemFamily> findByCode(ItemFamilyCode code);
 
+    List<ItemFamily> findAll();
+
     List<String> availableFamilyAttributes(List<AttributeCode> codes);
 
     void save(ItemFamily family);

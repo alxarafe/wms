@@ -3,12 +3,14 @@ package com.alxarafe.app.infrastructure.controller;
 import com.alxarafe.app.application.catalogue.CreateItemFamily;
 import com.alxarafe.app.application.catalogue.ItemFamilyConflict;
 import com.alxarafe.app.application.catalogue.ItemFamilyRepository;
+import com.alxarafe.app.application.catalogue.ListItemFamilies;
 import com.alxarafe.app.domain.catalogue.entity.ItemFamily;
 import com.alxarafe.app.domain.rules.valueobject.AttributeCode;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -23,9 +25,11 @@ import java.util.Map;
 @RequestMapping("/api/item-families")
 public class ItemFamilyController {
     private final CreateItemFamily createItemFamily;
+    private final ListItemFamilies listItemFamilies;
 
     public ItemFamilyController(ItemFamilyRepository repository) {
         this.createItemFamily = new CreateItemFamily(repository);
+        this.listItemFamilies = new ListItemFamilies(repository);
     }
 
     @PostMapping
@@ -50,6 +54,21 @@ public class ItemFamilyController {
         response.put("name", family.name());
         response.put("attributes", family.attributes().stream().map(AttributeCode::value).toList());
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @GetMapping
+    public ResponseEntity<List<Map<String, Object>>> list() {
+        List<Map<String, Object>> families = listItemFamilies.execute().stream()
+                .map(family -> {
+                    Map<String, Object> response = new LinkedHashMap<>();
+                    response.put("id", family.id().value());
+                    response.put("code", family.code().value());
+                    response.put("name", family.name());
+                    response.put("attributes", family.attributes().stream().map(AttributeCode::value).toList());
+                    return response;
+                })
+                .toList();
+        return ResponseEntity.ok(families);
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)

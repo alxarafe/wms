@@ -1,8 +1,8 @@
-# API de creación de familias
+# API de creación y listado de familias
 
 ## Contrato común
 
-PHP y Java exponen `POST /api/item-families` con `Content-Type: application/json`:
+PHP y Java exponen `POST /api/item-families` y `GET /api/item-families` con `Content-Type: application/json`:
 
 ```json
 {
@@ -15,6 +15,10 @@ PHP y Java exponen `POST /api/item-families` con `Content-Type: application/json
 `attributes` es obligatorio y puede ser `[]`. La respuesta de alta es `201` con `id` UUID v7, `code`, `name` y `attributes`. Un código ya existente devuelve `409` con `{"error":"Item family code already exists."}`. Un JSON mal formado devuelve `400` con `{"error":"Invalid JSON body."}`. Un cuerpo sin los campos requeridos o un atributo que no exista como `FAMILY` también devuelve `400` con `error`; un atributo de tipo `LOCATION` se considera inválido para esta operación. El código y el nombre no pueden estar vacíos, el nombre tiene un máximo de 255 caracteres y la lista no admite códigos repetidos.
 
 El caso de uso reside en Application y utiliza un puerto de repositorio. Los adaptadores de persistencia de PHP y Java guardan la familia y sus vínculos en una transacción. Las APIs mantienen el mismo comportamiento observable para los escenarios incluidos en la colección Bruno.
+
+## Listado de familias
+
+`GET /api/item-families` devuelve `200` con un `JSON` cuya raíz es **un array**. Cada elemento tiene la misma forma que la respuesta de alta (`id`, `code`, `name`, `attributes` con los códigos de atributos `FAMILY` ordenados). Las familias se ordenan por `code` ascendente; sin familias registradas la respuesta es `[]`. No admite parámetros; un JSON de error no aplica a este endpoint.
 
 ## Pruebas aisladas
 

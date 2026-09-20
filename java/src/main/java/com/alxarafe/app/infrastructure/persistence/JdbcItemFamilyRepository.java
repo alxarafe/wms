@@ -24,18 +24,26 @@ public class JdbcItemFamilyRepository implements ItemFamilyRepository {
     public Optional<ItemFamily> findByCode(ItemFamilyCode code) {
         List<ItemFamily> families = jdbc.query(
                 "SELECT id, code, name FROM item_family WHERE code = ?",
-                (result, row) -> new ItemFamily(
-                        new ItemFamilyId(result.getString("id")),
-                        new ItemFamilyCode(result.getString("code")),
-                        result.getString("name"),
-                        jdbc.query(
-                                "SELECT a.code FROM attribute a "
-                                        + "JOIN item_family_attribute fa ON fa.attribute_id = a.id "
-                                        + "WHERE fa.item_family_id = ? ORDER BY a.code",
-                                (attributes, index) -> new AttributeCode(attributes.getString("code")),
-                                result.getString("id"))),
+                (result, row) -> hydrate(result.getString("id"), result.getString("code"), result.getString("name")),
                 code.value());
         return families.stream().findFirst();
+    }
+
+    @Override
+    public List<ItemFamily> findAll() {
+        return jdbc.query(
+                "SELECT id, code, name FROM item_family ORDER BY code",
+                (result, row) -> hydrate(result.getString("id"), result.getString("code"), result.getString("name")));
+    }
+
+    private ItemFamily hydrate(String id, String code, String name) {
+        List<AttributeCode> attributes = jdbc.query(
+                "SELECT a.code FROM attribute a "
+                        + "JOIN item_family_attribute fa ON fa.attribute_id = a.id "
+                        + "WHERE fa.item_family_id = ? ORDER BY a.code",
+                (result, index) -> new AttributeCode(result.getString("code")),
+                id);
+        return new ItemFamily(new ItemFamilyId(id), new ItemFamilyCode(code), name, attributes);
     }
 
     @Override
