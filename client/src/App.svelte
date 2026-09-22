@@ -140,8 +140,14 @@
       <button class={apiMode === 'php' ? 'active' : ''} onclick={() => changeApiMode('php')}>
         PHP
       </button>
-      <button class={apiMode === 'java' ? 'active' : ''} onclick={() => changeApiMode('java')}>
-        Java
+      <button
+        class={apiMode === 'java' ? 'active' : ''}
+        disabled
+        title="Modo Java temporalmente desactivado"
+        aria-label="Java (temporalmente desactivado)"
+        onclick={() => changeApiMode('java')}
+      >
+        Java (próximamente)
       </button>
     </div>
   </header>
@@ -253,6 +259,11 @@
     background: var(--accent);
     border-color: var(--accent);
     color: white;
+  }
+
+  .modes button:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
   }
 
   .message {
