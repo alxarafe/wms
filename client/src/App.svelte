@@ -25,7 +25,7 @@
   const aisles = $derived.by(() =>
     (warehouse?.zones ?? []).flatMap((zone) =>
       zone.aisles.map((aisle) => ({
-        label: `${zone.code} / ${aisle.code} · ${aisle.bays}×${aisle.levels}`,
+        label: `Calle ${aisle.code} · ${aisle.bays}×${aisle.levels}`,
         code: aisle.code,
         role: zone.zoneTypeCode,
       })),

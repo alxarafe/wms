@@ -87,7 +87,7 @@ function makeAisle(
   }
   return {
     id: `aisle-${zoneCode}-${aisleCode}`,
-    code: `${zoneCode}-${aisleCode}`,
+    code: String(aisleNumber),
     zoneId: `zone-${zoneCode}`,
     bays,
     levels,
