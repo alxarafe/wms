@@ -1,0 +1,39 @@
+meta {
+  name: JAVA - crear CAJA24
+  type: http
+  seq: 14
+}
+
+post {
+  url: {{java_base_url}}/api/items
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  Accept: application/json
+}
+
+body:json {
+  {
+    "sku": "CAJA24",
+    "name": "Caja de 24 latas",
+    "familyCode": "FOOD",
+    "baseUomCode": "PAL",
+    "isBatchManaged": false,
+    "isExpirable": false
+  }
+}
+
+tests {
+  test("crea CAJA24 sin lote", function () {
+    expect(res.getStatus()).to.equal(201);
+    expect(res.getBody().sku).to.equal("CAJA24");
+    expect(res.getBody().name).to.equal("Caja de 24 latas");
+    expect(res.getBody().familyCode).to.equal("FOOD");
+    expect(res.getBody().baseUomCode).to.equal("PAL");
+    expect(res.getBody().isBatchManaged).to.equal(false);
+    expect(res.getBody().isExpirable).to.equal(false);
+  });
+}

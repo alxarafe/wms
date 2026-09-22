@@ -1,5 +1,5 @@
 meta {
-  name: PHP - entrada REFRI sin lote
+  name: PHP - entrada YOGUR FRESA sin lote
   type: http
   seq: 3
 }
@@ -18,14 +18,14 @@ headers {
 body:json {
   {
     "locationId": "01a0aca9-bc00-7020-8000-000000000008",
-    "itemCode": "REFRI",
+    "itemCode": "YOGUR FRESA",
     "quantity": 30,
     "unit": "EA"
   }
 }
 
 tests {
-  test("PHP exige lote para REFRI", function () {
+  test("PHP exige lote para YOGUR FRESA", function () {
     expect(res.getStatus()).to.equal(400);
   });
 }

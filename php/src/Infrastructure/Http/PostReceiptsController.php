@@ -30,10 +30,17 @@ final readonly class PostReceiptsController
             $itemCode = self::requireString($body, 'itemCode');
             $unit = self::requireString($body, 'unit');
             $quantity = self::requireNumber($body, 'quantity');
-            $batchCode = self::optionalString($body['batchCode'] ?? null);
+            $batchCode = self::optionalString($body['batchCode'] ?? null, 'batchCode');
+            $expirationDate = self::optionalString($body['expirationDate'] ?? null, 'expirationDate');
 
             $provider = new PdoStockOperationsProvider(Database::getConnection());
-            $view = $provider->receive($locationId, $itemCode, Quantity::fromDecimal($quantity, $unit), $batchCode);
+            $view = $provider->receive(
+                $locationId,
+                $itemCode,
+                Quantity::fromDecimal($quantity, $unit),
+                $batchCode,
+                $expirationDate,
+            );
             $this->app->json($view, 201);
         } catch (JsonException) {
             $this->app->json(['error' => 'Invalid JSON body.'], 400);
@@ -62,13 +69,13 @@ final readonly class PostReceiptsController
         return $body[$key];
     }
 
-    private static function optionalString(mixed $value): ?string
+    private static function optionalString(mixed $value, string $key): ?string
     {
         if ($value === null) {
             return null;
         }
         if (!is_string($value) || $value === '') {
-            throw new InvalidArgumentException('Expected a string for batchCode.');
+            throw new InvalidArgumentException("Expected a non-empty string for {$key}.");
         }
         return $value;
     }

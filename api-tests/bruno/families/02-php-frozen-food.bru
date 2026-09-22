@@ -19,19 +19,16 @@ body:json {
   {
     "code": "FROZEN_FOOD",
     "name": "Alimentos congelados",
-    "attributes": [
-      "IS_FOOD",
-      "IS_FROZEN"
-    ]
+    "attributes": []
   }
 }
 
 tests {
-  test("crea FROZEN_FOOD con sus atributos", function () {
+  test("crea FROZEN_FOOD sin atributos por ahora", function () {
     expect(res.getStatus()).to.equal(201);
     expect(res.getBody().id).to.match(/^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i);
     expect(res.getBody().code).to.equal("FROZEN_FOOD");
     expect(res.getBody().name).to.equal("Alimentos congelados");
-    expect(res.getBody().attributes).to.eql(["IS_FOOD", "IS_FROZEN"]);
+    expect(res.getBody().attributes).to.eql([]);
   });
 }

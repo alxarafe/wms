@@ -1,5 +1,5 @@
 meta {
-  name: Java - entrada REFRI con lote
+  name: Java - entrada YOGUR FRESA con lote
   type: http
   seq: 14
 }
@@ -18,19 +18,19 @@ headers {
 body:json {
   {
     "locationId": "01a0aca9-bc00-7020-8000-000000000008",
-    "itemCode": "REFRI",
+    "itemCode": "YOGUR FRESA",
     "quantity": 30,
     "unit": "EA",
-    "batchCode": "L-REF-001"
+    "batchCode": "L-YOG-001"
   }
 }
 
 tests {
-  test("Java recibe REFRI con lote y ocupa P-A-04-02", function () {
+  test("Java recibe YOGUR FRESA con lote y ocupa P-A-04-02", function () {
     expect(res.getStatus()).to.equal(201);
     expect(res.getBody().code).to.equal("P-A-04-02");
-    expect(res.getBody().references[0].itemCode).to.equal("REFRI");
-    expect(res.getBody().references[0].batchCode).to.equal("L-REF-001");
+    expect(res.getBody().references[0].itemCode).to.equal("YOGUR FRESA");
+    expect(res.getBody().references[0].batchCode).to.equal("L-YOG-001");
     expect(res.getBody().references[0].quantity).to.equal(30);
   });
 }

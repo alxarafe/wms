@@ -12,6 +12,11 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.ResultSet;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -40,8 +45,8 @@ public class JdbcStockOperationsProvider implements StockOperationsProvider {
 
     @Override
     @Transactional
-    public Map<String, Object> receive(String locationId, String itemCode,
-                                       Quantity quantity, String batchCode) {
+    public Map<String, Object> receive(String locationId, String itemCode, Quantity quantity,
+                                       String batchCode, String expirationDate) {
         Map<String, Object> location = findLocation(locationId);
         if (location == null) {
             throw new StockOperationException("Location not found.", 404);
@@ -58,7 +63,7 @@ public class JdbcStockOperationsProvider implements StockOperationsProvider {
         if (item == null) {
             throw new StockOperationException("Item not found.", 404);
         }
-        String batchId = resolveBatch(item, batchCode);
+        String batchId = resolveBatch(item, batchCode, expirationDate);
 
         String huId = HandlingUnitId.generate().value();
         String quantId = StockQuantId.generate().value();
@@ -114,22 +119,83 @@ public class JdbcStockOperationsProvider implements StockOperationsProvider {
         return locationView(locationId);
     }
 
-    private String resolveBatch(Map<String, Object> item, String batchCode) {
+    private String resolveBatch(Map<String, Object> item, String batchCode, String expirationDate) {
         boolean batchManaged = Boolean.TRUE.equals(item.get("is_batch_managed"));
         String itemId = (String) item.get("id");
+
+        Instant expiration = null;
+        if (expirationDate != null && !expirationDate.isBlank()) {
+            if (batchCode == null || batchCode.isBlank()) {
+                throw new StockOperationException("Expiration date requires a batch code.", 400);
+            }
+            expiration = parseExpirationDate(expirationDate);
+        }
+
         if (batchManaged && (batchCode == null || batchCode.isBlank())) {
             throw new StockOperationException("Batch code is required for item " + itemId + ".", 400);
         }
         if (!batchManaged && batchCode != null && !batchCode.isBlank()) {
             throw new StockOperationException("Item " + itemId + " is not batch managed.", 400);
         }
+        if (!batchManaged && expiration != null) {
+            throw new StockOperationException(
+                    "Expiration date is not allowed for a non-batch-managed item.", 400);
+        }
         if (batchCode == null || batchCode.isBlank()) {
             return null;
         }
-        List<String> ids = jdbc.query("SELECT id FROM batch WHERE item_id = ? AND batch_code = ?",
-                (result, row) -> result.getString("id"), itemId, batchCode);
-        return ids.stream().findFirst().orElseThrow(
+
+        List<Map<String, Object>> batches = jdbc.query(
+                "SELECT id, expiration_date FROM batch WHERE item_id = ? AND batch_code = ?",
+                this::rowToMap, itemId, batchCode);
+        Map<String, Object> batch = batches.stream().findFirst().orElseThrow(
                 () -> new StockOperationException("Batch not found for item " + itemId + ".", 404));
+        String batchId = (String) batch.get("id");
+
+        if (expiration != null) {
+            Instant stored = toInstant(batch.get("expiration_date"));
+            if (stored == null) {
+                jdbc.update("UPDATE batch SET expiration_date = ? WHERE id = ?",
+                        java.sql.Timestamp.from(expiration), batchId);
+            } else if (!expiration.equals(stored)) {
+                throw new StockOperationException(
+                        "Expiration date does not match the stored expiration of batch "
+                                + batchCode + ".", 409);
+            }
+        }
+
+        return batchId;
+    }
+
+    /**
+     * Acepta una fecha (YYYY-MM-DD, medianoche UTC) o un instante ISO-8601
+     * con zona horaria; ambos se normalizan a UTC.
+     */
+    private static Instant parseExpirationDate(String value) {
+        try {
+            return OffsetDateTime.parse(value).toInstant();
+        } catch (DateTimeParseException ignored) {
+            // se prueba la variante fecha simple
+        }
+        try {
+            return LocalDate.parse(value).atStartOfDay(ZoneOffset.UTC).toInstant();
+        } catch (DateTimeParseException ignored) {
+            throw new StockOperationException(
+                    "Expiration date must be an ISO-8601 date or datetime.", 400);
+        }
+    }
+
+    private static Instant toInstant(Object value) {
+        if (value instanceof java.time.Instant instant) {
+            return instant;
+        }
+        if (value instanceof java.time.OffsetDateTime odt) {
+            return odt.toInstant();
+        }
+        if (value instanceof java.sql.Timestamp timestamp) {
+            return timestamp.toInstant();
+        }
+        return null;
     }
 
     private Map<String, Object> findLocation(String locationId) {

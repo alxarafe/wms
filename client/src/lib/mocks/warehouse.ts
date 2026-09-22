@@ -17,12 +17,17 @@ import type {
 //   - 1 HU por hueco en cualquier rol, HU monoreferencia (vacío / ocupado / bloqueado).
 // Cuando existan los endpoints reales, esta capa se sustituye sin tocar las vistas.
 
-const ITEMS: Record<string, { id: string; name: string; unit: string }> = {
-  REFRI: { id: 'it-REFRI', name: 'Alimento refrigerado', unit: 'EA' },
-  FROZ: { id: 'it-FROZ', name: 'Alimento congelado', unit: 'EA' },
-  DRY: { id: 'it-DRY', name: 'Alimento seco', unit: 'EA' },
-  CHEM: { id: 'it-CHEM', name: 'Producto químico', unit: 'EA' },
-  NEUTRO: { id: 'it-NEUTRO', name: 'Producto neutro', unit: 'EA' },
+const ITEMS: Record<string, { id: string; name: string; unit: string; isBatchManaged: boolean }> = {
+  'YOGUR FRESA': { id: 'it-YOGUR-FRESA', name: 'Yogur de fresa refrigerado', unit: 'EA', isBatchManaged: true },
+  'PALITOS CANGREJO': { id: 'it-PALITOS-CANGREJO', name: 'Palitos de cangrejo congelados', unit: 'EA', isBatchManaged: true },
+  'ARROZ LARGO': { id: 'it-ARROZ-LARGO', name: 'Arroz de grano largo', unit: 'EA', isBatchManaged: false },
+  'LEJIA BLANCA': { id: 'it-LEJIA-BLANCA', name: 'Lejía blanca', unit: 'EA', isBatchManaged: false },
+  'AGUA MINERAL': { id: 'it-AGUA-MINERAL', name: 'Agua mineral sin gas', unit: 'EA', isBatchManaged: false },
+};
+
+const BATCHES: Record<string, string | null> = {
+  'L-YOG-001': '2026-12-31T00:00:00Z',
+  'L-PAL-001': null,
 };
 
 function makeReference(
@@ -113,11 +118,11 @@ function buildWarehouse(): WarehouseState {
   };
 
   const picking1 = findLocation(warehouse, 'P-A-01-01');
-  picking1.references = [makeReference('REFRI', 30, 'EA', 'L-REF-001', '3400000000000000001')];
+  picking1.references = [makeReference('YOGUR FRESA', 30, 'EA', 'L-YOG-001', '3400000000000000001')];
   const picking2 = findLocation(warehouse, 'P-A-01-02');
-  picking2.references = [makeReference('DRY', 40, 'EA', null, '3400000000000000002')];
+  picking2.references = [makeReference('ARROZ LARGO', 40, 'EA', null, '3400000000000000002')];
   const reserve1 = findLocation(warehouse, 'B-B-01-01');
-  reserve1.references = [makeReference('CHEM', 12, 'PAL', null, '3400000000000000003')];
+  reserve1.references = [makeReference('LEJIA BLANCA', 12, 'PAL', null, '3400000000000000003')];
 
   return warehouse;
 }
@@ -193,15 +198,66 @@ export function mockSubmitReceipt(request: ReceiptRequest): OperationResult<Loca
     return failure(409, 'El hueco está bloqueado o deshabilitado.');
   }
 
+  const item = ITEMS[request.itemCode];
+  const batchCode = request.batchCode?.trim() || null;
+  const expirationDate = request.expirationDate?.trim() || null;
+
+  if (expirationDate && !batchCode) {
+    return failure(400, 'La caducidad exige un lote.');
+  }
+  let expirationInstant: string | null = null;
+  if (expirationDate) {
+    expirationInstant = parseISODate(expirationDate);
+    if (expirationInstant === null) {
+      return failure(400, 'La caducidad debe ser una fecha ISO-8601.');
+    }
+  }
+  if (item.isBatchManaged && !batchCode) {
+    return failure(400, 'El lote es obligatorio para artículos gestionados por lotes.');
+  }
+  if (!item.isBatchManaged && batchCode) {
+    return failure(400, `El artículo ${request.itemCode} no se gestiona por lotes.`);
+  }
+  if (!item.isBatchManaged && expirationInstant) {
+    return failure(400, 'La caducidad solo puede enviarse con lotes.');
+  }
+  if (batchCode) {
+    if (!(batchCode in BATCHES)) {
+      return failure(404, `Lote no encontrado para ${request.itemCode}.`);
+    }
+    const stored = BATCHES[batchCode];
+    if (expirationInstant) {
+      if (stored === null) {
+        BATCHES[batchCode] = expirationDate;
+      } else {
+        const storedInstant = parseISODate(stored);
+        if (storedInstant === null || storedInstant !== expirationInstant) {
+          return failure(409, `La caducidad no coincide con la almacenada para ${batchCode}.`);
+        }
+      }
+    }
+  }
+
   if (location.references.length > 0) {
     return failure(409, 'El hueco ya está ocupado: admite una única HU monoreferencia.');
   }
   const huCode = `3${String(Math.floor(Math.random() * 1e17)).padStart(17, '0')}`;
   location.references = [
-    makeReference(request.itemCode, request.quantity, request.unit, request.batchCode ?? null, huCode),
+    makeReference(request.itemCode, request.quantity, request.unit, batchCode, huCode),
   ];
 
   return { ok: true, status: 201, data: clone(location) };
+}
+
+function parseISODate(value: string): string | null {
+  const dateOnly = /^\d{4}-\d{2}-\d{2}$/;
+  if (dateOnly.test(value)) {
+    const [year, month, day] = value.split('-').map(Number);
+    const utc = Date.UTC(year, month - 1, day);
+    return Number.isNaN(utc) ? null : new Date(utc).toISOString();
+  }
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? null : parsed.toISOString();
 }
 
 export function mockSubmitIssue(request: IssueRequest): OperationResult<LocationState> {

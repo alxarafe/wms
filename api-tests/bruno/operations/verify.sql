@@ -12,10 +12,17 @@ LEFT JOIN item i ON i.id = sq.item_id
 WHERE l.id IN (
     '01a0aca9-bc00-7020-8000-000000000001',
     '01a0aca9-bc00-7020-8000-000000000002',
+    '01a0aca9-bc00-7020-8000-000000000003',
     '01a0aca9-bc00-7020-8000-000000000009',
     '01a0aca9-bc00-7020-8000-000000000007',
     '01a0aca9-bc00-7020-8000-000000000008'
 )
+
+UNION ALL
+
+SELECT 'batch:' || b.batch_code || ' exp:' || COALESCE(b.expiration_date::text, 'NULL') AS line
+FROM batch b
+WHERE b.batch_code IN ('L-YOG-001', 'L-PAL-001')
 
 UNION ALL
 

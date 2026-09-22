@@ -11,6 +11,8 @@ use Alxarafe\App\Domain\Inventory\ValueObject\Quantity;
 use Alxarafe\App\Domain\Inventory\ValueObject\Sscc;
 use Alxarafe\App\Domain\Inventory\ValueObject\StockQuantId;
 use Alxarafe\App\Domain\Rules\ValueObject\StockMovementId;
+use DateTimeImmutable;
+use DateTimeZone;
 use PDO;
 use Throwable;
 
@@ -33,8 +35,13 @@ final readonly class PdoStockOperationsProvider implements StockOperationsProvid
     }
 
     /** @return LocationView */
-    public function receive(string $locationId, string $itemCode, Quantity $quantity, ?string $batchCode): array
-    {
+    public function receive(
+        string $locationId,
+        string $itemCode,
+        Quantity $quantity,
+        ?string $batchCode,
+        ?string $expirationDate = null,
+    ): array {
         $location = $this->findLocation($locationId);
         if ($location === null) {
             throw new StockOperationException('Location not found.', 404);
@@ -50,7 +57,7 @@ final readonly class PdoStockOperationsProvider implements StockOperationsProvid
         if ($item === null) {
             throw new StockOperationException('Item not found.', 404);
         }
-        $batchId = $this->resolveBatch($item, $batchCode);
+        $batchId = $this->resolveBatch($item, $batchCode, $expirationDate);
 
         $huId = HandlingUnitId::generate();
         $quantId = StockQuantId::generate();
@@ -118,28 +125,85 @@ final readonly class PdoStockOperationsProvider implements StockOperationsProvid
     }
 
     /**
+     * Resuelve el lote de la entrada y aplica la captura de caducidad
+     * (decisión del responsable): si el lote no tiene caducidad almacenada,
+     * se establece con el valor enviado; si ya tiene una distinta, se rechaza.
+     *
      * @param array{id: string, is_batch_managed: mixed} $item
      */
-    private function resolveBatch(array $item, ?string $batchCode): ?string
+    private function resolveBatch(array $item, ?string $batchCode, ?string $expirationDate): ?string
     {
         $batchManaged = self::toBool($item['is_batch_managed']);
+
+        $expiration = null;
+        if ($expirationDate !== null && $expirationDate !== '') {
+            if ($batchCode === null || $batchCode === '') {
+                throw new StockOperationException('Expiration date requires a batch code.', 400);
+            }
+            $expiration = self::parseExpirationDate($expirationDate);
+        }
+
         if ($batchManaged && ($batchCode === null || $batchCode === '')) {
             throw new StockOperationException("Batch code is required for item {$item['id']}.", 400);
         }
         if (!$batchManaged && $batchCode !== null && $batchCode !== '') {
             throw new StockOperationException("Item {$item['id']} is not batch managed.", 400);
         }
+        if (!$batchManaged && $expiration !== null) {
+            throw new StockOperationException('Expiration date is not allowed for a non-batch-managed item.', 400);
+        }
         if ($batchCode === null || $batchCode === '') {
             return null;
         }
 
-        $statement = $this->pdo->prepare('SELECT id FROM batch WHERE item_id = ? AND batch_code = ?');
+        $statement = $this->pdo->prepare('SELECT id, expiration_date FROM batch WHERE item_id = ? AND batch_code = ?');
         $statement->execute([$item['id'], $batchCode]);
         $row = $statement->fetch(PDO::FETCH_ASSOC);
         if (!is_array($row)) {
             throw new StockOperationException("Batch not found for item {$item['id']}.", 404);
         }
-        return (string) $row['id'];
+        $batchId = (string) $row['id'];
+
+        if ($expiration !== null) {
+            $stored = $row['expiration_date'] === null
+                ? null
+                : new DateTimeImmutable((string) $row['expiration_date']);
+            if ($stored === null) {
+                $update = $this->pdo->prepare('UPDATE batch SET expiration_date = ? WHERE id = ?');
+                $update->execute([$expiration->format(DATE_ATOM), $batchId]);
+            } elseif ($stored->format('U') !== $expiration->format('U')) {
+                throw new StockOperationException(
+                    "Expiration date does not match the stored expiration of batch {$batchCode}.",
+                    409,
+                );
+            }
+        }
+
+        return $batchId;
+    }
+
+    /**
+     * Acepta una fecha (YYYY-MM-DD, medianoche UTC) o un instante ISO-8601
+     * con zona horaria; ambos se normalizan a UTC.
+     */
+    private static function parseExpirationDate(string $value): DateTimeImmutable
+    {
+        $candidates = [
+            ['Y-m-d\TH:i:sP', null],
+            ['Y-m-d', new DateTimeZone('UTC')],
+        ];
+        foreach ($candidates as [$format, $timezone]) {
+            $parsed = DateTimeImmutable::createFromFormat($format, $value, $timezone);
+            if (!$parsed instanceof DateTimeImmutable) {
+                continue;
+            }
+            $errors = DateTimeImmutable::getLastErrors();
+            if (is_array($errors) && ($errors['warning_count'] > 0 || $errors['error_count'] > 0)) {
+                continue;
+            }
+            return $parsed->setTimezone(new DateTimeZone('UTC'));
+        }
+        throw new StockOperationException('Expiration date must be an ISO-8601 date or datetime.', 400);
     }
 
     /** @return array{id: string, status: string, aisle_blocked: bool}|null */

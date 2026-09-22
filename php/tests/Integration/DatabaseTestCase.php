@@ -70,7 +70,8 @@ abstract class DatabaseTestCase extends TestCase
             return;
         }
 
-        $stmt = $pdo->query("SELECT tablename FROM pg_tables WHERE schemaname = 'public'");
+        $schema = preg_replace('/[^A-Za-z0-9_]/', '', $_ENV['WMS_REVIEW_V2_SCHEMA'] ?? 'wms_review_v2');
+        $stmt = $pdo->query("SELECT tablename FROM pg_tables WHERE schemaname = '{$schema}'");
         if ($stmt === false) {
             return;
         }

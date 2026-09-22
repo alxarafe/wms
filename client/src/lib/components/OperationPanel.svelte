@@ -17,6 +17,7 @@
   let quantity = $state<number | null>(null);
   let unit = $state('EA');
   let batchCode = $state('');
+  let expirationDate = $state('');
 
   const ready = $derived(Boolean(itemCode.trim()) && quantity !== null && quantity > 0);
 
@@ -29,6 +30,7 @@
     itemCode = '';
     quantity = null;
     batchCode = '';
+    expirationDate = '';
   }
 
   async function run(): Promise<void> {
@@ -45,6 +47,7 @@
       const request: ReceiptRequest = {
         ...base,
         batchCode: batchCode.trim() ? batchCode.trim() : null,
+        expirationDate: expirationDate.trim() ? expirationDate.trim() : null,
       };
       const result = await submitReceipt(request);
       onResult(result);
@@ -82,13 +85,13 @@
 
     <label class="field">
       <span>Artículo (código)</span>
-      <input bind:value={itemCode} list="items" placeholder="REFRI, FROZ, DRY, CHEM, NEUTRO" />
+      <input bind:value={itemCode} list="items" placeholder="YOGUR FRESA, PALITOS CANGREJO, …" />
       <datalist id="items">
-        <option value="REFRI">Alimento refrigerado</option>
-        <option value="FROZ">Alimento congelado</option>
-        <option value="DRY">Alimento seco</option>
-        <option value="CHEM">Producto químico</option>
-        <option value="NEUTRO">Producto neutro</option>
+        <option value="YOGUR FRESA">Yogur de fresa refrigerado</option>
+        <option value="PALITOS CANGREJO">Palitos de cangrejo congelados</option>
+        <option value="ARROZ LARGO">Arroz de grano largo</option>
+        <option value="LEJIA BLANCA">Lejía blanca</option>
+        <option value="AGUA MINERAL">Agua mineral sin gas</option>
       </datalist>
     </label>
 
@@ -112,6 +115,10 @@
       <label class="field">
         <span>Lote (opcional)</span>
         <input bind:value={batchCode} placeholder="L-2026-001" />
+      </label>
+      <label class="field">
+        <span>Caducidad (opcional)</span>
+        <input type="date" bind:value={expirationDate} />
       </label>
     {/if}
 
@@ -169,6 +176,7 @@
   }
 
   .field {
+    min-width: 0;
     display: flex;
     flex-direction: column;
     gap: 4px;
@@ -178,11 +186,13 @@
 
   .row {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 8px;
   }
 
   input {
+    width: 100%;
+    min-width: 0;
     padding: 8px;
     border: 1px solid var(--border);
     border-radius: 8px;

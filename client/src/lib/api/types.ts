@@ -67,12 +67,43 @@ export interface ItemFamily {
   attributes: string[];
 }
 
+export interface CreateUomRequest {
+  code: string;
+  description: string;
+}
+
+export interface Uom {
+  id: string;
+  code: string;
+  description: string;
+}
+
+export interface CreateItemRequest {
+  sku: string;
+  name: string;
+  familyCode: string;
+  baseUomCode: string;
+  isBatchManaged: boolean;
+  isExpirable: boolean;
+}
+
+export interface Item {
+  id: string;
+  sku: string;
+  name: string;
+  familyCode: string;
+  baseUomCode: string;
+  isBatchManaged: boolean;
+  isExpirable: boolean;
+}
+
 export interface ReceiptRequest {
   locationId: string;
   itemCode: string;
   quantity: number;
   unit: string;
   batchCode?: string | null;
+  expirationDate?: string | null;
 }
 
 export interface IssueRequest {

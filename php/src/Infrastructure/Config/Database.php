@@ -30,4 +30,15 @@ final class Database
 
         return self::$connection;
     }
+
+    public static function catalogSchema(): string
+    {
+        $schema = preg_replace('/[^A-Za-z0-9_]/', '', $_ENV['WMS_REVIEW_V2_SCHEMA'] ?? 'wms_review_v2');
+        return $schema !== '' && $schema !== null ? $schema : 'wms_review_v2';
+    }
+
+    public static function qualified(string $table): string
+    {
+        return self::catalogSchema() . '.' . $table;
+    }
 }

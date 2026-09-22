@@ -8,7 +8,6 @@ use Alxarafe\App\Domain\Catalogue\Entity\Item;
 use Alxarafe\App\Domain\Catalogue\ValueObject\ItemFamilyId;
 use Alxarafe\App\Domain\Catalogue\ValueObject\ItemId;
 use Alxarafe\App\Domain\Catalogue\ValueObject\ItemUomConversion;
-use Alxarafe\App\Domain\Catalogue\ValueObject\Money;
 use Alxarafe\App\Domain\Catalogue\ValueObject\Sku;
 use Alxarafe\App\Domain\Catalogue\ValueObject\UomId;
 use InvalidArgumentException;
@@ -20,7 +19,6 @@ final class ItemTest extends TestCase
     private Sku $sku;
     private ItemFamilyId $familyId;
     private UomId $baseUomId;
-    private Money $baseCost;
 
     protected function setUp(): void
     {
@@ -28,12 +26,11 @@ final class ItemTest extends TestCase
         $this->sku = new Sku('WIDGET-001');
         $this->familyId = new ItemFamilyId('018e4e3a-3e7b-7b3e-8000-000000000002');
         $this->baseUomId = new UomId('018e4e3a-3e7b-7b3e-8000-000000000003');
-        $this->baseCost = new Money(10.0, 'EUR');
     }
 
     public function testCreate(): void
     {
-        $item = new Item($this->id, $this->sku, 'Widget', $this->familyId, $this->baseUomId, false, false, $this->baseCost);
+        $item = new Item($this->id, $this->sku, 'Widget', $this->familyId, $this->baseUomId, false, false);
         self::assertTrue($this->id->equals($item->id()));
         self::assertTrue($this->sku->equals($item->sku()));
         self::assertSame('Widget', $item->name());
@@ -41,31 +38,30 @@ final class ItemTest extends TestCase
         self::assertTrue($this->baseUomId->equals($item->baseUomId()));
         self::assertFalse($item->isBatchManaged());
         self::assertFalse($item->isExpirable());
-        self::assertTrue($this->baseCost->equals($item->baseCost()));
     }
 
     public function testEmptyName(): void
     {
         $this->expectException(InvalidArgumentException::class);
-        new Item($this->id, $this->sku, '', $this->familyId, $this->baseUomId, false, false, $this->baseCost);
+        new Item($this->id, $this->sku, '', $this->familyId, $this->baseUomId, false, false);
     }
 
     public function testExpirableRequiresBatchManaged(): void
     {
         $this->expectException(InvalidArgumentException::class);
-        new Item($this->id, $this->sku, 'Cheese', $this->familyId, $this->baseUomId, false, true, $this->baseCost);
+        new Item($this->id, $this->sku, 'Cheese', $this->familyId, $this->baseUomId, false, true);
     }
 
     public function testExpirableWithBatchManaged(): void
     {
-        $item = new Item($this->id, $this->sku, 'Cheese', $this->familyId, $this->baseUomId, true, true, $this->baseCost);
+        $item = new Item($this->id, $this->sku, 'Cheese', $this->familyId, $this->baseUomId, true, true);
         self::assertTrue($item->isBatchManaged());
         self::assertTrue($item->isExpirable());
     }
 
     public function testAddUomConversion(): void
     {
-        $item = new Item($this->id, $this->sku, 'Widget', $this->familyId, $this->baseUomId, false, false, $this->baseCost);
+        $item = new Item($this->id, $this->sku, 'Widget', $this->familyId, $this->baseUomId, false, false);
         $conversion = new ItemUomConversion(
             $this->baseUomId,
             new UomId('018e4e3a-3e7b-7b3e-8000-000000000004'),
@@ -77,7 +73,7 @@ final class ItemTest extends TestCase
 
     public function testAddDuplicateUomConversion(): void
     {
-        $item = new Item($this->id, $this->sku, 'Widget', $this->familyId, $this->baseUomId, false, false, $this->baseCost);
+        $item = new Item($this->id, $this->sku, 'Widget', $this->familyId, $this->baseUomId, false, false);
         $toUomId = new UomId('018e4e3a-3e7b-7b3e-8000-000000000004');
         $conversion = new ItemUomConversion($this->baseUomId, $toUomId, 12.0);
         $item->addUomConversion($conversion);

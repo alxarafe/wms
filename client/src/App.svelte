@@ -10,12 +10,15 @@
   } from './lib/api/types';
   import AisleView from './lib/components/AisleView.svelte';
   import CatalogPanel from './lib/components/CatalogPanel.svelte';
+  import ItemPanel from './lib/components/ItemPanel.svelte';
   import OperationPanel from './lib/components/OperationPanel.svelte';
+  import UomPanel from './lib/components/UomPanel.svelte';
 
   let warehouse: WarehouseState | null = $state(null);
   let selectedAisleCode = $state('');
   let selectedLocationId: string | null = $state(null);
   let view = $state<'warehouse' | 'catalogue'>('warehouse');
+  let catalogueTab = $state<'families' | 'uoms' | 'items'>('families');
   let message = $state('');
   let messageKind: 'success' | 'failure' | 'info' = $state('info');
 
@@ -172,7 +175,24 @@
   </div>
 
   {#if view === 'catalogue'}
-    <CatalogPanel onResult={handleCatalogResult} />
+    <div class="catalogue-tabs" role="tablist">
+      <button class={catalogueTab === 'families' ? 'active' : ''} onclick={() => (catalogueTab = 'families')}>
+        Familias
+      </button>
+      <button class={catalogueTab === 'uoms' ? 'active' : ''} onclick={() => (catalogueTab = 'uoms')}>
+        Unidades
+      </button>
+      <button class={catalogueTab === 'items' ? 'active' : ''} onclick={() => (catalogueTab = 'items')}>
+        Artículos
+      </button>
+    </div>
+    {#if catalogueTab === 'families'}
+      <CatalogPanel onResult={handleCatalogResult} />
+    {:else if catalogueTab === 'uoms'}
+      <UomPanel onResult={handleCatalogResult} />
+    {:else}
+      <ItemPanel onResult={handleCatalogResult} />
+    {/if}
   {:else}
     <div class="layout">
       <div class="main-col">
@@ -299,6 +319,24 @@
     gap: 8px;
     font-size: 0.9rem;
     color: var(--text-dim);
+  }
+
+  .catalogue-tabs {
+    display: flex;
+    gap: 8px;
+  }
+
+  .catalogue-tabs button {
+    padding: 8px 16px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface);
+  }
+
+  .catalogue-tabs button.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: white;
   }
 
   select {

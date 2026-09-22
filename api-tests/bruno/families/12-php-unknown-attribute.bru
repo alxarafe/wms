@@ -1,5 +1,5 @@
 meta {
-  name: PHP - location-attribute
+  name: PHP - atributo no existente
   type: http
   seq: 12
 }
@@ -18,7 +18,7 @@ headers {
 body:json {
   {
     "code": "INVALID_FAMILY",
-    "name": "Atributo de ubicación",
+    "name": "Atributo no existente en el catálogo",
     "attributes": [
       "COLD"
     ]
@@ -26,7 +26,7 @@ body:json {
 }
 
 tests {
-  test("rechaza location-attribute", function () {
+  test("rechaza un atributo que no existe en el catálogo", function () {
     expect(res.getStatus()).to.equal(400);
     expect(res.getBody().error).to.equal("Unknown FAMILY attribute: COLD");
   });

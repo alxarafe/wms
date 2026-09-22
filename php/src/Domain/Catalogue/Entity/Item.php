@@ -7,7 +7,6 @@ namespace Alxarafe\App\Domain\Catalogue\Entity;
 use Alxarafe\App\Domain\Catalogue\ValueObject\ItemFamilyId;
 use Alxarafe\App\Domain\Catalogue\ValueObject\ItemId;
 use Alxarafe\App\Domain\Catalogue\ValueObject\ItemUomConversion;
-use Alxarafe\App\Domain\Catalogue\ValueObject\Money;
 use Alxarafe\App\Domain\Catalogue\ValueObject\Sku;
 use Alxarafe\App\Domain\Catalogue\ValueObject\UomId;
 use InvalidArgumentException;
@@ -28,7 +27,6 @@ final class Item
         private readonly UomId $baseUomId,
         private readonly bool $isBatchManaged,
         private readonly bool $isExpirable,
-        private readonly Money $baseCost,
     ) {
         if ($name === '') {
             throw new InvalidArgumentException('Item name cannot be empty.');
@@ -74,11 +72,6 @@ final class Item
     public function isExpirable(): bool
     {
         return $this->isExpirable;
-    }
-
-    public function baseCost(): Money
-    {
-        return $this->baseCost;
     }
 
     /**

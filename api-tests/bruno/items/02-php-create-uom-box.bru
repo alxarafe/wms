@@ -1,0 +1,31 @@
+meta {
+  name: PHP - crear uom BOX
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{php_base_url}}/api/uoms
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  Accept: application/json
+}
+
+body:json {
+  {
+    "code": "BOX",
+    "description": "Standard Box"
+  }
+}
+
+tests {
+  test("crea la unidad BOX para los artículos", function () {
+    expect(res.getStatus()).to.equal(201);
+    expect(res.getBody().code).to.equal("BOX");
+    expect(res.getBody().description).to.equal("Standard Box");
+  });
+}

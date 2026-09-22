@@ -1,5 +1,5 @@
 meta {
-  name: Java - entrada REFRI sin lote
+  name: Java - entrada YOGUR FRESA sin lote
   type: http
   seq: 13
 }
@@ -18,14 +18,14 @@ headers {
 body:json {
   {
     "locationId": "01a0aca9-bc00-7020-8000-000000000008",
-    "itemCode": "REFRI",
+    "itemCode": "YOGUR FRESA",
     "quantity": 30,
     "unit": "EA"
   }
 }
 
 tests {
-  test("Java exige lote para REFRI", function () {
+  test("Java exige lote para YOGUR FRESA", function () {
     expect(res.getStatus()).to.equal(400);
   });
 }

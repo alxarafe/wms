@@ -9,6 +9,7 @@ use Alxarafe\App\Domain\Catalogue\Entity\ItemFamily;
 use Alxarafe\App\Domain\Catalogue\ValueObject\ItemFamilyCode;
 use Alxarafe\App\Domain\Catalogue\ValueObject\ItemFamilyId;
 use Alxarafe\App\Domain\Rules\ValueObject\AttributeCode;
+use Alxarafe\App\Infrastructure\Config\Database;
 use PDO;
 use PDOStatement;
 use RuntimeException;
@@ -16,6 +17,10 @@ use Throwable;
 
 final readonly class PdoItemFamilyRepository implements ItemFamilyRepository
 {
+    private const ITEM_FAMILY = 'item_family';
+    private const STORAGE_ATTRIBUTE = 'storage_attribute';
+    private const FAMILY_STORAGE_ATTRIBUTE = 'family_storage_attribute';
+
     public function __construct(private PDO $pdo)
     {
     }
@@ -23,7 +28,7 @@ final readonly class PdoItemFamilyRepository implements ItemFamilyRepository
     public function findByCode(ItemFamilyCode $code): ?ItemFamily
     {
         $row = $this->fetch(
-            'SELECT id, code, name FROM item_family WHERE code = :code',
+            sprintf('SELECT id, code, name FROM %s WHERE code = :code', Database::qualified(self::ITEM_FAMILY)),
             ['code' => $code->value()],
         );
         return $row === null ? null : $this->hydrate($row);
@@ -32,7 +37,7 @@ final readonly class PdoItemFamilyRepository implements ItemFamilyRepository
     /** @return list<ItemFamily> */
     public function findAll(): array
     {
-        $rows = $this->statement('SELECT id, code, name FROM item_family ORDER BY code')->fetchAll(PDO::FETCH_ASSOC);
+        $rows = $this->statement(sprintf('SELECT id, code, name FROM %s ORDER BY code', Database::qualified(self::ITEM_FAMILY)))->fetchAll(PDO::FETCH_ASSOC);
         return array_values(array_map(fn (array $row): ItemFamily => $this->hydrate($row), $rows));
     }
 
@@ -51,8 +56,13 @@ final readonly class PdoItemFamilyRepository implements ItemFamilyRepository
         $codes = array_map(
             static fn (string $value): AttributeCode => new AttributeCode($value),
             array_values($this->statement(
-                'SELECT a.code FROM attribute a JOIN item_family_attribute fa ON fa.attribute_id = a.id '
-                . 'WHERE fa.item_family_id = :id ORDER BY a.code',
+                sprintf(
+                    'SELECT sa.code FROM %s sa '
+                    . 'JOIN %s fsa ON fsa.attribute_id = sa.id '
+                    . 'WHERE fsa.family_id = :id ORDER BY sa.code',
+                    Database::qualified(self::STORAGE_ATTRIBUTE),
+                    Database::qualified(self::FAMILY_STORAGE_ATTRIBUTE),
+                ),
                 ['id' => $row['id']],
             )->fetchAll(PDO::FETCH_COLUMN)),
         );
@@ -76,9 +86,11 @@ final readonly class PdoItemFamilyRepository implements ItemFamilyRepository
             return [];
         }
         $placeholders = implode(', ', array_fill(0, count($codes), '?'));
-        $statement = $this->pdo->prepare(
-            "SELECT code FROM attribute WHERE target_type = 'FAMILY' AND code IN ($placeholders)"
-        );
+        $statement = $this->pdo->prepare(sprintf(
+            'SELECT code FROM %s WHERE code IN (%s)',
+            Database::qualified(self::STORAGE_ATTRIBUTE),
+            $placeholders,
+        ));
         $statement->execute(array_map(static fn (AttributeCode $code): string => $code->value(), $codes));
         return array_values($statement->fetchAll(PDO::FETCH_COLUMN));
     }
@@ -87,12 +99,17 @@ final readonly class PdoItemFamilyRepository implements ItemFamilyRepository
     {
         $this->pdo->beginTransaction();
         try {
-            $statement = $this->pdo->prepare('INSERT INTO item_family (id, code, name) VALUES (?, ?, ?)');
+            $statement = $this->pdo->prepare(sprintf(
+                'INSERT INTO %s (id, code, name) VALUES (?, ?, ?)',
+                Database::qualified(self::ITEM_FAMILY),
+            ));
             $statement->execute([$family->id()->value(), $family->code()->value(), $family->name()]);
-            $link = $this->pdo->prepare(
-                "INSERT INTO item_family_attribute (item_family_id, attribute_id) "
-                . "SELECT ?, id FROM attribute WHERE code = ? AND target_type = 'FAMILY'"
-            );
+            $link = $this->pdo->prepare(sprintf(
+                'INSERT INTO %s (family_id, attribute_id) '
+                . 'SELECT ?, id FROM %s WHERE code = ?',
+                Database::qualified(self::FAMILY_STORAGE_ATTRIBUTE),
+                Database::qualified(self::STORAGE_ATTRIBUTE),
+            ));
             foreach ($family->attributes() as $attribute) {
                 $link->execute([$family->id()->value(), $attribute->value()]);
             }

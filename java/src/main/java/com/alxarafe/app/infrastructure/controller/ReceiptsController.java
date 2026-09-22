@@ -33,10 +33,11 @@ public class ReceiptsController {
         String itemCode = requireString(body, "itemCode");
         String unit = requireString(body, "unit");
         double quantity = requireNumber(body, "quantity");
-        String batchCode = optionalString(body.get("batchCode"));
+        String batchCode = optionalString(body.get("batchCode"), "batchCode");
+        String expirationDate = optionalString(body.get("expirationDate"), "expirationDate");
 
         Map<String, Object> view = provider.receive(
-                locationId, itemCode, Quantity.fromDecimal(quantity, unit), batchCode);
+                locationId, itemCode, Quantity.fromDecimal(quantity, unit), batchCode, expirationDate);
         return ResponseEntity.status(HttpStatus.CREATED).body(view);
     }
 
@@ -71,12 +72,12 @@ public class ReceiptsController {
         return number.doubleValue();
     }
 
-    private static String optionalString(Object value) {
+    private static String optionalString(Object value, String field) {
         if (value == null) {
             return null;
         }
         if (!(value instanceof String string) || string.isBlank()) {
-            throw new IllegalArgumentException("Expected a string for batchCode.");
+            throw new IllegalArgumentException("Expected a non-empty string for " + field + ".");
         }
         return string;
     }

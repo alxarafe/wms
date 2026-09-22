@@ -24,6 +24,12 @@ let families: ItemFamily[] = [
     name: 'Alimentos secos',
     attributes: ['IS_FOOD'],
   },
+  {
+    id: '01a0aca9-bc00-7703-8000-000000000003',
+    code: 'CHEMICAL',
+    name: 'Productos químicos',
+    attributes: ['IS_CHEMICAL'],
+  },
 ];
 
 function clone<T>(value: T): T {
@@ -37,6 +43,10 @@ function failure(status: number, error: string): OperationFailure {
 export function mockFetchItemFamilies(): OperationResult<ItemFamily[]> {
   const sorted = [...families].sort((a, b) => a.code.localeCompare(b.code));
   return { ok: true, status: 200, data: clone(sorted) };
+}
+
+export function mockFindFamilyByCode(code: string): ItemFamily | null {
+  return families.find((family) => family.code === code.trim()) ?? null;
 }
 
 export function mockCreateItemFamily(request: CreateItemFamilyRequest): OperationResult<ItemFamily> {

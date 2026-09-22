@@ -19,9 +19,18 @@ use Alxarafe\App\Domain\Inventory\ValueObject\Quantity;
 interface StockOperationsProvider
 {
     /**
+     * @param string|null $expirationDate caducidad del lote en la recepción
+     *                                    (ISO-8601, opcional)
+     *
      * @return LocationView
      */
-    public function receive(string $locationId, string $itemCode, Quantity $quantity, ?string $batchCode): array;
+    public function receive(
+        string $locationId,
+        string $itemCode,
+        Quantity $quantity,
+        ?string $batchCode,
+        ?string $expirationDate = null,
+    ): array;
 
     /**
      * @return LocationView

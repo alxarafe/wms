@@ -83,22 +83,24 @@ ON CONFLICT (id) DO NOTHING;
 
 -- uom EA/PAL existen en 001 ('01a0aca9-bc00-700c-...' y '...700e-...').
 INSERT INTO item (id, sku, name, family_id, base_uom_id, is_batch_managed, is_expirable, base_cost) VALUES
-    ('01a0aca9-bc00-7030-8000-000000000001', 'REFRI', 'Alimento refrigerado',
+    ('01a0aca9-bc00-7030-8000-000000000001', 'YOGUR FRESA', 'Yogur de fresa refrigerado',
      '01a0aca9-bc00-7031-8000-000000000001', '01a0aca9-bc00-700c-8000-00000000000c', TRUE, TRUE, 0),
-    ('01a0aca9-bc00-7030-8000-000000000002', 'FROZ', 'Alimento congelado',
+    ('01a0aca9-bc00-7030-8000-000000000002', 'PALITOS CANGREJO', 'Palitos de cangrejo congelados',
      '01a0aca9-bc00-7031-8000-000000000001', '01a0aca9-bc00-700c-8000-00000000000c', TRUE, TRUE, 0),
-    ('01a0aca9-bc00-7030-8000-000000000003', 'DRY', 'Alimento seco',
+    ('01a0aca9-bc00-7030-8000-000000000003', 'ARROZ LARGO', 'Arroz de grano largo',
      '01a0aca9-bc00-7031-8000-000000000001', '01a0aca9-bc00-700c-8000-00000000000c', FALSE, FALSE, 0),
-    ('01a0aca9-bc00-7030-8000-000000000004', 'CHEM', 'Producto químico',
+    ('01a0aca9-bc00-7030-8000-000000000004', 'LEJIA BLANCA', 'Lejía blanca',
      '01a0aca9-bc00-7031-8000-000000000002', '01a0aca9-bc00-700e-8000-00000000000e', FALSE, FALSE, 0),
-    ('01a0aca9-bc00-7030-8000-000000000005', 'NEUTRO', 'Producto neutro',
+    ('01a0aca9-bc00-7030-8000-000000000005', 'AGUA MINERAL', 'Agua mineral sin gas',
      '01a0aca9-bc00-7031-8000-000000000001', '01a0aca9-bc00-700c-8000-00000000000c', FALSE, FALSE, 0)
 ON CONFLICT (id) DO NOTHING;
 
 -- ── Lotes ───────────────────────────────────────────────────
 INSERT INTO batch (id, item_id, batch_code, expiration_date) VALUES
     ('01a0aca9-bc00-7032-8000-000000000001', '01a0aca9-bc00-7030-8000-000000000001',
-     'L-REF-001', '2026-12-31T00:00:00Z')
+     'L-YOG-001', '2026-12-31T00:00:00Z'),
+    ('01a0aca9-bc00-7032-8000-000000000002', '01a0aca9-bc00-7030-8000-000000000002',
+     'L-PAL-001', NULL)
 ON CONFLICT (id) DO NOTHING;
 
 -- ── Unidades de carga y existencias ─────────────────────────

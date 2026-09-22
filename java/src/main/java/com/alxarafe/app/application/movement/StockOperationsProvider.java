@@ -15,7 +15,12 @@ import java.util.Map;
  */
 public interface StockOperationsProvider {
 
-    Map<String, Object> receive(String locationId, String itemCode, Quantity quantity, String batchCode);
+    /**
+     * Receipt with an optional ISO-8601 expiration date captured for the
+     * batch (stored when the batch has none; a differing one is rejected).
+     */
+    Map<String, Object> receive(
+            String locationId, String itemCode, Quantity quantity, String batchCode, String expirationDate);
 
     Map<String, Object> issue(String locationId, String itemCode, Quantity quantity);
 }

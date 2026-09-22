@@ -16,6 +16,13 @@ final class UuidV7IdTest extends TestCase
         self::assertSame($uuid, $id->value());
     }
 
+    public function testValidUuidV8(): void
+    {
+        $uuid = '01a0aca9-bc00-8060-8000-000000000002';
+        $id = new TestUuidV7Id($uuid);
+        self::assertSame($uuid, $id->value());
+    }
+
     public function testEmptyString(): void
     {
         $this->expectException(InvalidArgumentException::class);

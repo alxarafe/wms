@@ -31,10 +31,10 @@ tests {
   const occupied = locations.filter((location) => location.references.length === 1);
   test("PHP muestra las tres HU sembradas", function () {
     expect(occupied.length).to.equal(3);
-    expect(occupied.some((l) => l.code === "P-A-01-01" && l.references[0].itemCode === "REFRI"
+    expect(occupied.some((l) => l.code === "P-A-01-01" && l.references[0].itemCode === "YOGUR FRESA"
       && l.references[0].quantity === 30 && l.references[0].unit === "EA"
-      && l.references[0].batchCode === "L-REF-001")).to.equal(true);
-    expect(occupied.some((l) => l.code === "B-B-01-01" && l.references[0].itemCode === "CHEM"
+      && l.references[0].batchCode === "L-YOG-001")).to.equal(true);
+    expect(occupied.some((l) => l.code === "B-B-01-01" && l.references[0].itemCode === "LEJIA BLANCA"
       && l.references[0].quantity === 12 && l.references[0].unit === "PAL")).to.equal(true);
   });
 }
