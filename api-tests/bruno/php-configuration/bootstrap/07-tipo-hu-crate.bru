@@ -1,0 +1,41 @@
+meta {
+  name: Tipo HU CRATE
+  type: http
+  seq: 7
+}
+
+post {
+  url: {{base_url}}/api/handling-unit-types
+  body: json
+  auth: none
+}
+
+headers {
+  Accept: application/json
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "code": "CRATE",
+    "name": "Contenedor configurable",
+    "is_active": false
+  }
+}
+
+tests {
+  test("Tipo HU CRATE", function () {
+    expect(res.getStatus()).to.equal(201);
+    const data = res.getBody();
+    const expected = {
+      "code": "CRATE",
+      "name": "Contenedor configurable",
+      "is_active": false
+    };
+    expect(data.id).to.match(/^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i);
+    expected.id = data.id;
+    bru.setVar("crate_id", data.id);
+    expect(data).to.deep.equal(expected);
+    bru.setVar("crate_record", data);
+  });
+}

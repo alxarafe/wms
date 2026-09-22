@@ -1,0 +1,25 @@
+meta {
+  name: Localizar almacen para bloqueo
+  type: http
+  seq: 51
+}
+
+get {
+  url: {{base_url}}/api/warehouses
+  body: none
+  auth: none
+}
+
+headers {
+  Accept: application/json
+}
+
+tests {
+  test("Localizar almacen para bloqueo", function () {
+    expect(res.getStatus()).to.equal(200);
+    const warehouse = res.getBody().warehouses.find(w => w.code === "A");
+    expect(warehouse).to.be.an("object");
+    bru.setVar("a_id", warehouse.id);
+    bru.setVar("locked_record", warehouse);
+  });
+}

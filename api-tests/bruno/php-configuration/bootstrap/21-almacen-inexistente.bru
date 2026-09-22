@@ -1,0 +1,32 @@
+meta {
+  name: Almacen inexistente
+  type: http
+  seq: 21
+}
+
+post {
+  url: {{base_url}}/api/warehouses/01900000-0000-7000-8000-000000000000/location-types
+  body: json
+  auth: none
+}
+
+headers {
+  Accept: application/json
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "code": "X",
+    "name": "X"
+  }
+}
+
+tests {
+  test("Almacen inexistente", function () {
+    expect(res.getStatus()).to.equal(404);
+    expect(res.getBody()).to.have.all.keys("error");
+    expect(res.getBody().error).to.be.a("string").and.not.empty;
+    
+  });
+}

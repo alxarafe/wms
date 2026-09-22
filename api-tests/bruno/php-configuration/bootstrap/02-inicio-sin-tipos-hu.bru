@@ -1,0 +1,22 @@
+meta {
+  name: Inicio sin tipos HU
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{base_url}}/api/handling-unit-types
+  body: none
+  auth: none
+}
+
+headers {
+  Accept: application/json
+}
+
+tests {
+  test("Inicio sin tipos HU", function () {
+    expect(res.getStatus()).to.equal(200);
+    expect(res.getBody()).to.deep.equal({handling_unit_types: []});
+  });
+}

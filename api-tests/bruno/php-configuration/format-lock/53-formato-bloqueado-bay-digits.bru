@@ -1,0 +1,36 @@
+meta {
+  name: Formato bloqueado bay_digits
+  type: http
+  seq: 53
+}
+
+put {
+  url: {{base_url}}/api/warehouses/{{a_id}}/format
+  body: json
+  auth: none
+}
+
+headers {
+  Accept: application/json
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "aisle_digits": 2,
+    "bay_digits": 3,
+    "level_digits": 1,
+    "uses_zones": false,
+    "separator": ".",
+    "include_zone_in_code": false
+  }
+}
+
+tests {
+  test("Formato bloqueado bay_digits", function () {
+    expect(res.getStatus()).to.equal(409);
+    expect(res.getBody()).to.have.all.keys("error");
+    expect(res.getBody().error).to.be.a("string").and.not.empty;
+    expect(res.getBody().error).to.equal("Warehouse format is locked after the first aisle.");
+  });
+}

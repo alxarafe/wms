@@ -1,0 +1,32 @@
+meta {
+  name: UUID mal formado
+  type: http
+  seq: 30
+}
+
+post {
+  url: {{base_url}}/api/warehouses/not-uuid/location-types
+  body: json
+  auth: none
+}
+
+headers {
+  Accept: application/json
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "code": "X",
+    "name": "X"
+  }
+}
+
+tests {
+  test("UUID mal formado", function () {
+    expect(res.getStatus()).to.equal(400);
+    expect(res.getBody()).to.have.all.keys("error");
+    expect(res.getBody().error).to.be.a("string").and.not.empty;
+    
+  });
+}

@@ -1,0 +1,29 @@
+services:
+  php-config-a:
+    image: wms-php-app:latest
+    volumes:
+      - ./php:/var/www/php
+      - ./database:/var/www/database:ro
+    working_dir: /var/www/php
+    ports:
+      - "127.0.0.1:28181:80"
+    environment:
+      POSTGRES_HOST: database
+      POSTGRES_PORT: "5432"
+      POSTGRES_DB: wms_php_configuration_a_test
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: root
+  php-config-b:
+    image: wms-php-app:latest
+    volumes:
+      - ./php:/var/www/php
+      - ./database:/var/www/database:ro
+    working_dir: /var/www/php
+    ports:
+      - "127.0.0.1:28182:80"
+    environment:
+      POSTGRES_HOST: database
+      POSTGRES_PORT: "5432"
+      POSTGRES_DB: wms_php_configuration_b_test
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: root

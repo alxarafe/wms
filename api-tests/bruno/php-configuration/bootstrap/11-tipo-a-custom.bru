@@ -1,0 +1,43 @@
+meta {
+  name: Tipo A CUSTOM
+  type: http
+  seq: 11
+}
+
+post {
+  url: {{base_url}}/api/warehouses/{{a_id}}/location-types
+  body: json
+  auth: none
+}
+
+headers {
+  Accept: application/json
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "code": "CUSTOM",
+    "name": "Configuración libre"
+  }
+}
+
+tests {
+  test("Tipo A CUSTOM", function () {
+    expect(res.getStatus()).to.equal(201);
+    const data = res.getBody();
+    const expected = {
+      "warehouse_id": bru.getVar("a_id"),
+      "code": "CUSTOM",
+      "name": "Configuración libre",
+      "max_locations_per_item": null,
+      "allows_multi_sku": false,
+      "allows_multi_batch": false
+    };
+    expect(data.id).to.match(/^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i);
+    expected.id = data.id;
+    bru.setVar("custom_id", data.id);
+    expect(data).to.deep.equal(expected);
+    bru.setVar("custom_record", data);
+  });
+}

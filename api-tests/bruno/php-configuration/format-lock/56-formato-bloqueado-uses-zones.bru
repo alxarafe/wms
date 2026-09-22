@@ -1,0 +1,36 @@
+meta {
+  name: Formato bloqueado uses_zones
+  type: http
+  seq: 56
+}
+
+put {
+  url: {{base_url}}/api/warehouses/{{a_id}}/format
+  body: json
+  auth: none
+}
+
+headers {
+  Accept: application/json
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "aisle_digits": 2,
+    "bay_digits": 2,
+    "level_digits": 1,
+    "uses_zones": true,
+    "separator": ".",
+    "include_zone_in_code": false
+  }
+}
+
+tests {
+  test("Formato bloqueado uses_zones", function () {
+    expect(res.getStatus()).to.equal(409);
+    expect(res.getBody()).to.have.all.keys("error");
+    expect(res.getBody().error).to.be.a("string").and.not.empty;
+    expect(res.getBody().error).to.equal("Warehouse format is locked after the first aisle.");
+  });
+}

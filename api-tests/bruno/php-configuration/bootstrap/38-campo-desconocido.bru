@@ -1,0 +1,33 @@
+meta {
+  name: Campo desconocido
+  type: http
+  seq: 38
+}
+
+post {
+  url: {{base_url}}/api/warehouses/{{a_id}}/location-types
+  body: json
+  auth: none
+}
+
+headers {
+  Accept: application/json
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "code": "BAD",
+    "name": "X",
+    "warehouse_id": "{{b_id}}"
+  }
+}
+
+tests {
+  test("Campo desconocido", function () {
+    expect(res.getStatus()).to.equal(400);
+    expect(res.getBody()).to.have.all.keys("error");
+    expect(res.getBody().error).to.be.a("string").and.not.empty;
+    
+  });
+}

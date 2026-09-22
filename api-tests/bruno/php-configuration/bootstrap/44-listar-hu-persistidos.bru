@@ -1,0 +1,22 @@
+meta {
+  name: Listar HU persistidos
+  type: http
+  seq: 44
+}
+
+get {
+  url: {{base_url}}/api/handling-unit-types
+  body: none
+  auth: none
+}
+
+headers {
+  Accept: application/json
+}
+
+tests {
+  test("Listar HU persistidos", function () {
+    expect(res.getStatus()).to.equal(200);
+    expect(res.getBody()).to.deep.equal({handling_unit_types: [bru.getVar("box_record"), bru.getVar("crate_record"), bru.getVar("pallet_record")]});
+  });
+}

@@ -1,0 +1,32 @@
+meta {
+  name: Tipo inexistente
+  type: http
+  seq: 22
+}
+
+post {
+  url: {{base_url}}/api/warehouses/{{a_id}}/location-types/01900000-0000-7000-8000-000000000000/hu-policies
+  body: json
+  auth: none
+}
+
+headers {
+  Accept: application/json
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "handling_unit_type_id": "{{pallet_id}}",
+    "accepts_full": true
+  }
+}
+
+tests {
+  test("Tipo inexistente", function () {
+    expect(res.getStatus()).to.equal(404);
+    expect(res.getBody()).to.have.all.keys("error");
+    expect(res.getBody().error).to.be.a("string").and.not.empty;
+    
+  });
+}

@@ -1,0 +1,24 @@
+meta {
+  name: Lectura de otro almacen
+  type: http
+  seq: 25
+}
+
+get {
+  url: {{base_url}}/api/warehouses/{{b_id}}/location-types/{{picking_id}}/hu-policies
+  body: none
+  auth: none
+}
+
+headers {
+  Accept: application/json
+}
+
+tests {
+  test("Lectura de otro almacen", function () {
+    expect(res.getStatus()).to.equal(409);
+    expect(res.getBody()).to.have.all.keys("error");
+    expect(res.getBody().error).to.be.a("string").and.not.empty;
+    
+  });
+}

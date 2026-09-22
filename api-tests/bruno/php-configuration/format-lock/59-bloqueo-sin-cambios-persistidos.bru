@@ -1,0 +1,22 @@
+meta {
+  name: Bloqueo sin cambios persistidos
+  type: http
+  seq: 59
+}
+
+get {
+  url: {{base_url}}/api/warehouses
+  body: none
+  auth: none
+}
+
+headers {
+  Accept: application/json
+}
+
+tests {
+  test("Bloqueo sin cambios persistidos", function () {
+    expect(res.getStatus()).to.equal(200);
+    expect(res.getBody().warehouses.find(w => w.code === "A")).to.deep.equal(bru.getVar("locked_record"));
+  });
+}

@@ -1,0 +1,22 @@
+meta {
+  name: Listar tipos B persistidos
+  type: http
+  seq: 46
+}
+
+get {
+  url: {{base_url}}/api/warehouses/{{b_id}}/location-types
+  body: none
+  auth: none
+}
+
+headers {
+  Accept: application/json
+}
+
+tests {
+  test("Listar tipos B persistidos", function () {
+    expect(res.getStatus()).to.equal(200);
+    expect(res.getBody()).to.deep.equal({location_types: [bru.getVar("b_picking_record")]});
+  });
+}

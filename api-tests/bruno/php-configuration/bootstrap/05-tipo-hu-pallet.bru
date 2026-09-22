@@ -1,0 +1,41 @@
+meta {
+  name: Tipo HU PALLET
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{base_url}}/api/handling-unit-types
+  body: json
+  auth: none
+}
+
+headers {
+  Accept: application/json
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "code": "PALLET",
+    "name": "Palé",
+    "is_active": true
+  }
+}
+
+tests {
+  test("Tipo HU PALLET", function () {
+    expect(res.getStatus()).to.equal(201);
+    const data = res.getBody();
+    const expected = {
+      "code": "PALLET",
+      "name": "Palé",
+      "is_active": true
+    };
+    expect(data.id).to.match(/^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i);
+    expected.id = data.id;
+    bru.setVar("pallet_id", data.id);
+    expect(data).to.deep.equal(expected);
+    bru.setVar("pallet_record", data);
+  });
+}

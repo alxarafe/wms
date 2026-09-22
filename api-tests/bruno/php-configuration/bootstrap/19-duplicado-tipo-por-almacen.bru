@@ -1,0 +1,32 @@
+meta {
+  name: Duplicado tipo por almacen
+  type: http
+  seq: 19
+}
+
+post {
+  url: {{base_url}}/api/warehouses/{{a_id}}/location-types
+  body: json
+  auth: none
+}
+
+headers {
+  Accept: application/json
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "code": "PICKING",
+    "name": "Duplicado"
+  }
+}
+
+tests {
+  test("Duplicado tipo por almacen", function () {
+    expect(res.getStatus()).to.equal(409);
+    expect(res.getBody()).to.have.all.keys("error");
+    expect(res.getBody().error).to.be.a("string").and.not.empty;
+    
+  });
+}

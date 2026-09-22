@@ -1,0 +1,22 @@
+meta {
+  name: Listar almacenes persistidos
+  type: http
+  seq: 43
+}
+
+get {
+  url: {{base_url}}/api/warehouses
+  body: none
+  auth: none
+}
+
+headers {
+  Accept: application/json
+}
+
+tests {
+  test("Listar almacenes persistidos", function () {
+    expect(res.getStatus()).to.equal(200);
+    expect(res.getBody()).to.deep.equal({warehouses: [bru.getVar("a_record"), bru.getVar("b_record")]});
+  });
+}

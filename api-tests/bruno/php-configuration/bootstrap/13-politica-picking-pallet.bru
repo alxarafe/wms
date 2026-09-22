@@ -1,0 +1,43 @@
+meta {
+  name: Politica picking pallet
+  type: http
+  seq: 13
+}
+
+post {
+  url: {{base_url}}/api/warehouses/{{a_id}}/location-types/{{picking_id}}/hu-policies
+  body: json
+  auth: none
+}
+
+headers {
+  Accept: application/json
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "handling_unit_type_id": "{{pallet_id}}",
+    "accepts_full": true,
+    "accepts_partial": true,
+    "allows_breakdown": true
+  }
+}
+
+tests {
+  test("Politica picking pallet", function () {
+    expect(res.getStatus()).to.equal(201);
+    const data = res.getBody();
+    const expected = {
+      "location_type_id": bru.getVar("picking_id"),
+      "handling_unit_type_id": bru.getVar("pallet_id"),
+      "accepts_full": true,
+      "accepts_partial": true,
+      "allows_breakdown": true,
+      "allows_full_dispatch": false
+    };
+    
+    expect(data).to.deep.equal(expected);
+    bru.setVar("picking_policy_record", data);
+  });
+}

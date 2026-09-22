@@ -1,0 +1,38 @@
+meta {
+  name: Duplicado almacen
+  type: http
+  seq: 17
+}
+
+post {
+  url: {{base_url}}/api/warehouses
+  body: json
+  auth: none
+}
+
+headers {
+  Accept: application/json
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "code": "A",
+    "name": "Duplicado",
+    "aisle_digits": 1,
+    "bay_digits": 2,
+    "level_digits": 1,
+    "uses_zones": false,
+    "separator": ".",
+    "include_zone_in_code": false
+  }
+}
+
+tests {
+  test("Duplicado almacen", function () {
+    expect(res.getStatus()).to.equal(409);
+    expect(res.getBody()).to.have.all.keys("error");
+    expect(res.getBody().error).to.be.a("string").and.not.empty;
+    
+  });
+}

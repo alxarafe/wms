@@ -1,0 +1,36 @@
+meta {
+  name: Modificar formato antes de calles
+  type: http
+  seq: 42
+}
+
+put {
+  url: {{base_url}}/api/warehouses/{{a_id}}/format
+  body: json
+  auth: none
+}
+
+headers {
+  Accept: application/json
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "aisle_digits": 2,
+    "bay_digits": 2,
+    "level_digits": 1,
+    "uses_zones": false,
+    "separator": ".",
+    "include_zone_in_code": false
+  }
+}
+
+tests {
+  test("Modificar formato antes de calles", function () {
+    expect(res.getStatus()).to.equal(200);
+    const expected = {...bru.getVar("a_record"), aisle_digits: 2};
+    expect(res.getBody()).to.deep.equal(expected);
+    bru.setVar("a_record", expected);
+  });
+}

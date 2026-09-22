@@ -1,0 +1,29 @@
+meta {
+  name: Raiz array
+  type: http
+  seq: 39
+}
+
+post {
+  url: {{base_url}}/api/warehouses
+  body: json
+  auth: none
+}
+
+headers {
+  Accept: application/json
+  Content-Type: application/json
+}
+
+body:json {
+  []
+}
+
+tests {
+  test("Raiz array", function () {
+    expect(res.getStatus()).to.equal(400);
+    expect(res.getBody()).to.have.all.keys("error");
+    expect(res.getBody().error).to.be.a("string").and.not.empty;
+    
+  });
+}

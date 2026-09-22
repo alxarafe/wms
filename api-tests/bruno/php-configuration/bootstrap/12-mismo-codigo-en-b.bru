@@ -1,0 +1,44 @@
+meta {
+  name: Mismo codigo en B
+  type: http
+  seq: 12
+}
+
+post {
+  url: {{base_url}}/api/warehouses/{{b_id}}/location-types
+  body: json
+  auth: none
+}
+
+headers {
+  Accept: application/json
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "code": "PICKING",
+    "name": "Preparación B",
+    "max_locations_per_item": 3
+  }
+}
+
+tests {
+  test("Mismo codigo en B", function () {
+    expect(res.getStatus()).to.equal(201);
+    const data = res.getBody();
+    const expected = {
+      "warehouse_id": bru.getVar("b_id"),
+      "code": "PICKING",
+      "name": "Preparación B",
+      "max_locations_per_item": 3,
+      "allows_multi_sku": false,
+      "allows_multi_batch": false
+    };
+    expect(data.id).to.match(/^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i);
+    expected.id = data.id;
+    bru.setVar("b_picking_id", data.id);
+    expect(data).to.deep.equal(expected);
+    bru.setVar("b_picking_record", data);
+  });
+}

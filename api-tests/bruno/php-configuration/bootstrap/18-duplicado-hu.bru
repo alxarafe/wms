@@ -1,0 +1,32 @@
+meta {
+  name: Duplicado HU
+  type: http
+  seq: 18
+}
+
+post {
+  url: {{base_url}}/api/handling-unit-types
+  body: json
+  auth: none
+}
+
+headers {
+  Accept: application/json
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "code": "PALLET",
+    "name": "Duplicado"
+  }
+}
+
+tests {
+  test("Duplicado HU", function () {
+    expect(res.getStatus()).to.equal(409);
+    expect(res.getBody()).to.have.all.keys("error");
+    expect(res.getBody().error).to.be.a("string").and.not.empty;
+    
+  });
+}

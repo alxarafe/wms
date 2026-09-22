@@ -1,0 +1,32 @@
+meta {
+  name: Nombre blanco
+  type: http
+  seq: 36
+}
+
+post {
+  url: {{base_url}}/api/warehouses/{{a_id}}/location-types
+  body: json
+  auth: none
+}
+
+headers {
+  Accept: application/json
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "code": "BAD",
+    "name": "  "
+  }
+}
+
+tests {
+  test("Nombre blanco", function () {
+    expect(res.getStatus()).to.equal(400);
+    expect(res.getBody()).to.have.all.keys("error");
+    expect(res.getBody().error).to.be.a("string").and.not.empty;
+    
+  });
+}

@@ -1,0 +1,22 @@
+meta {
+  name: Leer politica reserve
+  type: http
+  seq: 48
+}
+
+get {
+  url: {{base_url}}/api/warehouses/{{a_id}}/location-types/{{reserve_id}}/hu-policies
+  body: none
+  auth: none
+}
+
+headers {
+  Accept: application/json
+}
+
+tests {
+  test("Leer politica reserve", function () {
+    expect(res.getStatus()).to.equal(200);
+    expect(res.getBody()).to.deep.equal({hu_policies: [bru.getVar("reserve_policy_record")]});
+  });
+}
