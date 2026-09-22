@@ -83,7 +83,7 @@ final readonly class PdoWarehouseStateProvider implements WarehouseStateProvider
             LEFT JOIN item i ON i.id = sq.item_id
             LEFT JOIN batch b ON b.id = sq.batch_id
             WHERE z.warehouse_id = ?
-            ORDER BY z.code, a.code, l.level DESC, l.bay'
+            ORDER BY a.id, l.level DESC, l.bay'
         );
         $statement->execute([$warehouseId]);
 
@@ -94,7 +94,7 @@ final readonly class PdoWarehouseStateProvider implements WarehouseStateProvider
             'allowsMultiSku' => self::toBool($row['allows_multi_sku']),
             'isOperative' => self::toBool($row['is_operative']),
             'aisleId' => (string) $row['aisle_id'],
-            'aisleCode' => (string) $row['aisle_code'],
+            'aisleCode' => self::aisleDisplayCode((string) $row['aisle_code'], (string) $row['location_code']),
             'aisleBlocked' => self::toBool($row['aisle_blocked']),
             'locationId' => (string) $row['location_id'],
             'locationCode' => (string) $row['location_code'],
@@ -110,6 +110,16 @@ final readonly class PdoWarehouseStateProvider implements WarehouseStateProvider
             'unit' => self::optionalString($row['unit']),
             'batchCode' => self::optionalString($row['batch_code']),
         ], $statement->fetchAll(PDO::FETCH_ASSOC)));
+    }
+
+    private static function aisleDisplayCode(string $storedAisleCode, string $locationCode): string
+    {
+        $segments = explode('.', $locationCode);
+        if (count($segments) >= 4 && $segments[1] !== '') {
+            return $segments[1];
+        }
+
+        return $storedAisleCode;
     }
 
     private static function optionalString(mixed $value): ?string

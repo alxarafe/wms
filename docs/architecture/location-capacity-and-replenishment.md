@@ -30,6 +30,13 @@ Intentar colocar una segunda HU o una segunda referencia en un hueco ocupado es 
 
 No se introduce `location.max_quantity`: la ocupación no es proporcional a cantidades, por lo que ese campo carece de función en este modelo. La cantidad por HU se muestra como dato informativo del contenido.
 
+La demo legacy que alimenta el modo PHP se normaliza mediante la migración
+`database/migrations/006_align_legacy_demo_codes.sql`: sus huecos pasan a usar
+el formato configurable de la demo (`A.1.01.2`, etc.). El adaptador de estado
+expone el número de calle contenido en el código persistido. Esta compatibilidad
+solo cubre los datos de demostración; no añade una regla universal al esquema
+legacy ni sincroniza la implementación Java.
+
 ## 3. Representación visual en el cliente
 
 Por cada hueco de una calle (`aisle`, `bay`, `level`, `code`):
