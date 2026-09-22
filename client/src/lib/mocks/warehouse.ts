@@ -50,6 +50,8 @@ function makeReference(
 }
 
 function makeLocation(
+  warehouseCode: string,
+  aisleNumber: number,
   zoneCode: string,
   aisleCode: string,
   bay: number,
@@ -58,7 +60,7 @@ function makeLocation(
 ): LocationState {
   return {
     id: `loc-${zoneCode}-${aisleCode}-${bay}-${level}`,
-    code: `${zoneCode}-${aisleCode}-${String(bay).padStart(2, '0')}-${String(level).padStart(2, '0')}`,
+    code: [warehouseCode, String(aisleNumber), String(bay).padStart(2, '0'), String(level)].join('.'),
     bay,
     level,
     role,
@@ -69,6 +71,8 @@ function makeLocation(
 }
 
 function makeAisle(
+  warehouseCode: string,
+  aisleNumber: number,
   zoneCode: string,
   aisleCode: string,
   bays: number,
@@ -78,7 +82,7 @@ function makeAisle(
   const locations: LocationState[] = [];
   for (let level = levels; level >= 1; level -= 1) {
     for (let bay = 1; bay <= bays; bay += 1) {
-      locations.push(makeLocation(zoneCode, aisleCode, bay, level, role));
+      locations.push(makeLocation(warehouseCode, aisleNumber, zoneCode, aisleCode, bay, level, role));
     }
   }
   return {
@@ -99,7 +103,7 @@ function buildWarehouse(): WarehouseState {
     zoneTypeCode: 'PICKING',
     allowsMultiSku: true,
     isOperative: true,
-    aisles: [makeAisle('P', 'A', 4, 2, 'PICKING')],
+    aisles: [makeAisle('A', 1, 'P', 'A', 4, 2, 'PICKING')],
   };
   const bulkZone: ZoneState = {
     id: '01a0aca9-bc00-7011-8000-000000000002',
@@ -107,21 +111,21 @@ function buildWarehouse(): WarehouseState {
     zoneTypeCode: 'BULK',
     allowsMultiSku: false,
     isOperative: true,
-    aisles: [makeAisle('B', 'B', 6, 3, 'RESERVE')],
+    aisles: [makeAisle('A', 2, 'B', 'B', 6, 3, 'RESERVE')],
   };
 
   const warehouse: WarehouseState = {
     id: '01a0aca9-bc00-7010-8000-000000000001',
-    code: 'WH1',
-    name: 'Almacén de demostración',
+    code: 'A',
+    name: 'Demostración sin zonas',
     zones: [pickingZone, bulkZone],
   };
 
-  const picking1 = findLocation(warehouse, 'P-A-01-01');
+  const picking1 = findLocation(warehouse, 'A.1.01.1');
   picking1.references = [makeReference('YOGUR FRESA', 30, 'EA', 'L-YOG-001', '3400000000000000001')];
-  const picking2 = findLocation(warehouse, 'P-A-01-02');
+  const picking2 = findLocation(warehouse, 'A.1.01.2');
   picking2.references = [makeReference('ARROZ LARGO', 40, 'EA', null, '3400000000000000002')];
-  const reserve1 = findLocation(warehouse, 'B-B-01-01');
+  const reserve1 = findLocation(warehouse, 'A.2.01.1');
   reserve1.references = [makeReference('LEJIA BLANCA', 12, 'PAL', null, '3400000000000000003')];
 
   return warehouse;
