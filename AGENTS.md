@@ -33,7 +33,107 @@ Resolver las elecciones técnicas rutinarias dentro del alcance aprobado, explic
 
 Registrar las decisiones relevantes en `docs/architecture/` y las reglas de negocio en `docs/domain/`. Si el encargo es exclusivamente de análisis, entregar propuestas y preguntas sin implementarlas.
 
-## 4. Stack y fuentes verificables
+## 4. Alcance educativo y documentación de decisiones
+
+Este proyecto es un ejercicio serio de desarrollo de un WMS. No se exige implementar de inmediato toda la complejidad de un WMS industrial. Estas premisas se aplican a todas las tareas de análisis, diseño, implementación, migración, refactorización y corrección del WMS.
+
+- Favorecer soluciones sencillas, coherentes, comprobables y adecuadas para aprender correctamente el dominio.
+- No presentar una simplificación adoptada para el ejercicio como una regla universal de logística.
+- No añadir complejidad especulativa ni funcionalidad sin un caso de uso que la justifique.
+- No adoptar simplificaciones que creen deliberadamente un callejón sin salida cuando exista una alternativa sencilla y evolutiva.
+
+### Separación entre implementación actual y evolución futura
+
+Toda orden de trabajo debe distinguir expresamente:
+
+- qué se implementa;
+- qué no se implementa;
+- qué comportamiento actual se modifica;
+- qué simplificación se adopta;
+- qué limitaciones conocidas conserva o introduce;
+- qué alternativas relevantes se han considerado;
+- qué opciones se aplazan;
+- cómo podría evolucionar posteriormente la solución.
+
+Documentar las alternativas aplazadas sin implementarlas salvo autorización expresa.
+
+### Documentación obligatoria de cada cambio
+
+Toda tarea que modifique comportamiento, dominio, arquitectura, contratos, esquema, API o persistencia debe actualizar también la documentación correspondiente. Explicar, según resulte aplicable:
+
+- problema abordado;
+- comportamiento implementado;
+- decisión adoptada;
+- justificación;
+- invariantes afectadas;
+- limitaciones;
+- alternativas consideradas;
+- ventajas e inconvenientes de las alternativas;
+- motivo por el que no se implementan ahora;
+- impacto aproximado de una futura evolución;
+- condiciones que justificarían revisar la decisión;
+- pruebas o evidencias que validan el comportamiento.
+
+No considerar terminada una tarea si código, esquema, contratos, pruebas y documentación se contradicen.
+
+### Criterio entre docs/ y private/
+
+Guardar en `docs/` la documentación consolidada que forme parte de la fuente de verdad del proyecto:
+
+- comportamiento realmente implementado;
+- arquitectura vigente;
+- modelo de dominio adoptado;
+- invariantes;
+- contratos de API;
+- decisiones de diseño ya aceptadas;
+- limitaciones conocidas de la solución vigente;
+- extensiones futuras oficialmente previstas;
+- ADR u otros documentos que gobiernen el código.
+
+Guardar en `private/`:
+
+- auditorías;
+- análisis provisionales;
+- conciliaciones entre propuestas y código real;
+- investigaciones;
+- deliberaciones;
+- comparaciones de alternativas todavía no decididas;
+- borradores;
+- hipótesis;
+- opciones descartadas que no deban formar parte de la documentación pública;
+- informes internos de revisión.
+
+`private/` no puede utilizarse como fuente de verdad del proyecto, especialmente si está excluida mediante `.gitignore`. Cuando una decisión estudiada en `private/` sea aceptada y pase a gobernar la implementación, trasladar o sintetizar su contenido normativo en `docs/`.
+
+### Conservación y actualización documental
+
+- Antes de crear un documento nuevo, buscar si ya existe uno que cubra el mismo concepto y actualizarlo cuando sea la fuente adecuada.
+- Evitar documentos duplicados, contradictorios o con distinto vocabulario para el mismo concepto.
+- No afirmar que una funcionalidad está implementada si solo existe en el esquema, en el dominio, en una propuesta o en una opción futura.
+- Diferenciar expresamente entre: implementado y operativo; parcialmente implementado; modelado pero no utilizado; documentado como alternativa; pendiente de decisión; descartado.
+
+### Decisiones simplificadas y alternativas
+
+Cuando se elija una solución deliberadamente sencilla para este ejercicio, documentar:
+
+1. la solución adoptada;
+2. el motivo educativo o práctico;
+3. la limitación que implica;
+4. la alternativa o alternativas profesionales;
+5. el impacto de adoptarlas;
+6. el camino de migración posible.
+
+Ejemplo conceptual, sin convertirlo en una decisión obligatoria del dominio: una única HU por ubicación como solución simplificada de aprendizaje; su limitación (no representa ubicaciones compartidas ni capacidades físicas complejas); alternativas profesionales (número máximo de HU, capacidad por peso o volumen y validación dimensional); y una evolución posible (incorporar una política de capacidad sin cambiar innecesariamente la identidad de ubicación y HU). Este ejemplo solo explica la regla documental; no autoriza a cambiar el modelo actual.
+
+### Prohibición de sobrediseño
+
+- No crear entidades, columnas, servicios, abstracciones o eventos únicamente «por si fueran necesarios».
+- Documentar las posibilidades futuras antes de implementarlas.
+- Conseguir la extensibilidad mediante separación correcta de conceptos, vocabulario coherente, invariantes explícitas, contratos claros y migraciones controladas.
+- Una alternativa documentada no forma parte del alcance implementado.
+- No ampliar unilateralmente el alcance porque una solución más completa parezca técnicamente superior.
+
+## 5. Stack y fuentes verificables
 
 La base actual utiliza:
 
@@ -49,7 +149,7 @@ La base actual utiliza:
 
 Consultar `php/composer.json`, sus archivos de bloqueo cuando existan, `java/pom.xml`, los Dockerfiles y los workflows para conocer versiones y compatibilidad efectivas. No actualizar lenguajes, frameworks o dependencias ajenos al encargo.
 
-## 5. Arquitectura y dependencias
+## 6. Arquitectura y dependencias
 
 | Capa | Responsabilidad | Dependencias internas permitidas |
 | --- | --- | --- |
@@ -78,7 +178,7 @@ Deptrac y ArchUnit comprueban las reglas que estén configuradas. Su existencia 
 
 Revisar qué paquetes y dependencias cubren las reglas antes de afirmar que un límite está protegido. Para cambios en esas reglas, comprobar que detectan una dependencia prohibida representativa. No presentar una intención documentada como una garantía automatizada ya demostrada.
 
-## 6. Equivalencia PHP y Java
+## 7. Equivalencia PHP y Java
 
 Ambas implementaciones deben conservar el mismo contrato y las mismas reglas para la funcionalidad incluida en el encargo: entradas, respuestas, estados HTTP, errores y efectos persistidos.
 
@@ -88,7 +188,7 @@ No cambiar silenciosamente una implementación y dejar la otra con un contrato i
 
 La paridad debe demostrarse con escenarios comunes ejecutados contra ambas APIs. Un test unitario o dos pipelines separados no bastan por sí solos para demostrarla.
 
-## 7. Estructura y convenciones
+## 8. Estructura y convenciones
 
 | Ruta | Contenido |
 | --- | --- |
@@ -104,10 +204,11 @@ La paridad debe demostrarse con escenarios comunes ejecutados contra ambas APIs.
 | `bin/` | Scripts de desarrollo y comprobación |
 | `docs/domain/` | Vocabulario, reglas y casos de uso |
 | `docs/architecture/` | Decisiones y límites técnicos |
+| `private/` | Documentos provisionales y privados; no es fuente de verdad |
 
 En PHP, utilizar `declare(strict_types=1)`, PSR-12 y los namespaces existentes `Alxarafe\App` y `Tests`. En Java, mantener el paquete base `com.alxarafe.app` y las convenciones existentes. No renombrar el proyecto ni sus paquetes salvo petición expresa.
 
-## 8. Procedimiento de trabajo
+## 9. Procedimiento de trabajo
 
 1. Revisar el estado de Git y preservar los cambios preexistentes.
 2. Leer los archivos e instrucciones pertinentes al encargo.
@@ -119,7 +220,7 @@ En PHP, utilizar `declare(strict_types=1)`, PSR-12 y los namespaces existentes `
 
 No borrar cambios ajenos ni ejecutar operaciones destructivas para limpiar el entorno. Commit, push y despliegue se realizan cuando formen parte de la autorización del usuario; no son un paso obligatorio de cualquier tarea.
 
-## 9. Comandos y pruebas
+## 10. Comandos y pruebas
 
 Los scripts siguientes se ejecutan desde la raíz del repositorio, en el **anfitrión**. Los scripts de tests utilizan Docker para ejecutar comandos en los contenedores; requieren que estos estén arrancados.
 
@@ -157,7 +258,7 @@ Las pruebas de integración necesitan la base de datos y configuración correspo
 
 Los workflows existentes son una referencia de comprobación, no una certificación de producción. No afirmar que se ejecutaron contratos, servicios o pruebas que no se hayan ejecutado realmente.
 
-## 10. Documentación y entrega
+## 11. Documentación y entrega
 
 Mantener separados el estado implementado, los objetivos y las propuestas. Documentar reglas concretas, ejemplos y restricciones; un índice de temas no sustituye la definición del dominio.
 
@@ -165,9 +266,15 @@ Evitar contradicciones entre este archivo, README y `docs/ARCHITECTURE.md`. Ante
 
 Al finalizar, indicar en español:
 
-- Qué cambió y qué objetivo cumple.
-- Qué comprobaciones se ejecutaron y sus resultados.
-- Qué quedó sin verificar y la razón.
-- Qué decisiones o bloqueos siguen pendientes, si existen.
+- archivos modificados;
+- comportamiento incorporado o corregido y el objetivo que cumple;
+- decisiones adoptadas;
+- simplificaciones y limitaciones;
+- alternativas documentadas;
+- ubicación de la documentación creada o actualizada;
+- comprobaciones y pruebas ejecutadas y sus resultados;
+- lo que quedó sin verificar y la razón;
+- cuestiones pendientes o bloqueos, si existen;
+- confirmación de que no se implementaron alternativas aplazadas ni se amplió el alcance sin autorización.
 
 No declarar que el proyecto es seguro, profesional o listo para producción únicamente porque compila o pasan las pruebas. Sustentar cada conclusión en evidencia concreta.

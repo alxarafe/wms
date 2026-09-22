@@ -75,13 +75,25 @@ Both layers represent the same system from different abstraction levels and must
 ./bin/start.sh        # Builds & starts all containers
 ```
 
+### PHP-only initial configuration
+
+The first configuration delivery creates warehouses, HU types, warehouse location
+types and their policies through HTTP. Run `./bin/php_configuration_test.sh` on the
+host to recreate two dedicated PHP test databases and run migrations, PHPUnit and
+Bruno. Run the v2 migration line with `php bin/migrate.php` from `php/`; it excludes
+seeds and the legacy operational schema. Java synchronization is deferred.
+See the [PHP configuration contract](docs/architecture/php-configuration-api.md)
+for prerequisites and the temporary aisle fixture used to test format locking.
+
 ### Run tests
 
 ```bash
 # Inside containers:
 ./bin/php_test.sh     # PHPUnit (unit + integration + contract)
 ./bin/java_test.sh    # Maven (unit + architecture)
-./bin/bruno_families_test.sh  # APIs + Bruno with isolated databases; requires PostgreSQL running
+./bin/bruno_uoms_test.sh     # PHP API + Bruno uom catalogue (clean isolated v2 database)
+./bin/bruno_items_test.sh    # PHP API + Bruno item catalogue (clean isolated v2 database)
+./bin/bruno_families_test.sh # PHP API + Bruno item-family catalogue (clean isolated v2 database)
 ./bin/bruno_operations_test.sh  # Receipts/issues parity scenario on isolated databases
 
 # Full pipeline:
@@ -101,6 +113,16 @@ cd java && mvn test
 ```bash
 ./bin/migrate.sh
 ```
+
+Migrations `001`–`003` install the current `public` schema (the one consumed by
+the PHP/Java state and operations adapters). Migrations `004` and `005` install,
+**in parallel**, the `wms_review_v2` schema: the revised WMS domain source of
+truth (structure and demo data), leaving `public` untouched. The catalogue
+(`uom`, `item_family`, `item`) already runs against `wms_review_v2` in PHP by
+qualifying its tables to that schema (configurable via `WMS_REVIEW_V2_SCHEMA`);
+state and operations still read `public` and will move to that schema in later
+phases; the Java catalogue re-pairing is deferred. See
+[docs/architecture/wms-review-v2-schema.md](docs/architecture/wms-review-v2-schema.md).
 
 ### Access APIs
 

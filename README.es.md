@@ -75,13 +75,25 @@ Ambas capas representan el mismo sistema desde distintos niveles de abstracción
 ./bin/start.sh        # Construye e inicia todos los contenedores
 ```
 
+### Configuración inicial solo PHP
+
+La primera entrega de configuración crea almacenes, tipos de HU, tipos de hueco y
+políticas por API. Ejecuta `./bin/php_configuration_test.sh` desde el anfitrión para
+recrear dos bases exclusivas de prueba PHP y pasar migraciones, PHPUnit y Bruno.
+La línea v2 se aplica con `php bin/migrate.php` desde `php/`; excluye las semillas
+y el esquema operativo antiguo. Java queda sin sincronizar en este bloque.
+Contrato, requisitos y limitación de la fixture de calle para probar el bloqueo
+del formato: [configuración PHP](docs/architecture/php-configuration-api.md).
+
 ### Ejecutar tests
 
 ```bash
 # Dentro de los contenedores:
 ./bin/php_test.sh     # PHPUnit (unitarios + integración + contrato)
 ./bin/java_test.sh    # Maven (unitarios + arquitectura)
-./bin/bruno_families_test.sh  # APIs + Bruno en dos bases aisladas; requiere PostgreSQL arrancado
+./bin/bruno_uoms_test.sh     # API PHP + Bruno del catálogo de unidades (base aislada v2 limpia)
+./bin/bruno_items_test.sh    # API PHP + Bruno del catálogo de artículos (base aislada v2 limpia)
+./bin/bruno_families_test.sh # API PHP + Bruno del catálogo de familias (base aislada v2 limpia)
 ./bin/bruno_operations_test.sh  # Escenario de paridad de entradas/salidas en bases aisladas
 
 # Pipeline completo:
@@ -101,6 +113,16 @@ cd java && mvn test
 ```bash
 ./bin/migrate.sh
 ```
+
+Las migraciones `001`–`003` instalan el esquema `public` actual (operativo para
+los adaptadores PHP/Java de estado y operaciones). Las migraciones `004` y `005`
+instalan en **paralelo** el esquema `wms_review_v2`, fuente de verdad del dominio
+WMS revisado (estructura y datos de demostración), sin tocar `public`. El catálogo
+(`uom`, `item_family`, `item`) ya opera sobre `wms_review_v2` en PHP calificando sus
+tablas al esquema (configurable con `WMS_REVIEW_V2_SCHEMA`); estado y operaciones
+siguen leyendo `public` y se migran en fases posteriores. Solo queda aparcada la
+adaptación del catálogo Java. Ver
+[docs/architecture/wms-review-v2-schema.md](docs/architecture/wms-review-v2-schema.md).
 
 ### Acceder a las APIs
 

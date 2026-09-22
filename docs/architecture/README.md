@@ -12,3 +12,8 @@ Temas habituales:
 
 Objetivo:
 Proporcionar una referencia arquitectónica compartida para todas las implementaciones.
+
+## Configuración inicial PHP
+
+[Contrato, migraciones, límites y pruebas](php-configuration-api.md) de la primera
+entrega: almacenes, tipos HU, tipos de hueco y políticas. Sin sincronización Java.

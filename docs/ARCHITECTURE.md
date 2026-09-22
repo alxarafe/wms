@@ -123,6 +123,13 @@ Definido en `java/src/test/java/com/alxarafe/ArchitectureTest.java`:
 
 ## Consistencia del contrato de API
 
+La entrega de [configuración inicial PHP](architecture/php-configuration-api.md)
+añade almacenes, tipos HU, tipos de hueco, políticas y edición de formato únicamente
+a PHP. El puerto está en Application, las invariantes en Domain y los adaptadores
+Flight/PDO en Infrastructure. Este bloque no tiene paridad Java; las dos bases de
+su suite son PHP. La configuración v2 tampoco alimenta aún el estado/movimientos
+antiguos de `public`.
+
 Ambos stacks exponen `GET /api/health`, `POST /api/item-families`, `GET /api/warehouses/{id}/state`, `POST /api/receipts` y `POST /api/issues`. Las pruebas de contrato en `php/tests/Contract/` comprueban el estado de salud; la colección Bruno en `api-tests/bruno/families/` comprueba las cinco altas de familias y los errores de duplicado y atributo incompatible en ambas APIs. El contrato de creación y sus bases de prueba aisladas se detallan en [API de creación de familias](architecture/item-family-api.md); el contrato de entrada y salida de stock (estados HTTP, precisión de cantidades M5, semántica de `stock_movement` M6 y resolución provisional M3) en [API de operaciones de stock](architecture/stock-operations-api.md).
 
 ## Pirámide de pruebas

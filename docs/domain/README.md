@@ -13,3 +13,8 @@ Temas habituales:
 
 Objetivo:
 Mantener el modelo de negocio independiente de los detalles de implementación técnica.
+
+## Configuración PHP v2
+
+[Almacenes, tipos y políticas](warehouse-configuration.md): reglas implementadas,
+límites del modelo revisado y extensiones aplazadas. Primera entrega solo PHP.
