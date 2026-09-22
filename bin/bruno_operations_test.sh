@@ -21,7 +21,9 @@ for migration in "${migrations[@]}"; do
     fi
 done
 
-for database_name in database_bruno_php database_bruno_java; do
+# Regresión del esquema antiguo public, solo en la base aislada PHP.
+# No reinicia el esquema v2 ni ninguna base Java.
+for database_name in database_bruno_php; do
     if ! docker exec "$postgres_container" psql -U root -d postgres -tAc \
         "SELECT 1 FROM pg_database WHERE datname = '$database_name'" | grep -q 1; then
         docker exec "$postgres_container" createdb -U root "$database_name"
@@ -34,11 +36,10 @@ for database_name in database_bruno_php database_bruno_java; do
     done
 done
 
-"${compose[@]}" up -d --force-recreate --no-deps php-api-test java-api-test
+"${compose[@]}" up -d --force-recreate --no-deps php-api-test
 
 for service_url in \
-    "http://localhost:${BRUNO_PHP_PORT:-28081}/api/health" \
-    "http://localhost:${BRUNO_JAVA_PORT:-28082}/api/health"; do
+    "http://localhost:${BRUNO_PHP_PORT:-28081}/api/health"; do
     ready=0
     for attempt in {1..90}; do
         if curl --silent --fail "$service_url" >/dev/null; then
@@ -55,23 +56,17 @@ done
 
 project_name="$(docker inspect "$postgres_container" --format '{{ index .Config.Labels "com.docker.compose.project" }}')"
 cli_image="${BRUNO_CLI_IMAGE:-usebruno/cli:4.0.0}"
-docker run --rm --network "${project_name}_default" --entrypoint bru \
-    -v "$project_dir/api-tests/bruno/operations:/bruno:ro" -w /bruno \
-    "$cli_image" run --env docker -r
+# El estado inicial debe comprobarse antes de las entradas y salidas.
+for collection in health state operations; do
+    docker run --rm --network "${project_name}_default" --entrypoint bru \
+        -v "$project_dir/api-tests/bruno/$collection:/bruno:ro" -w /bruno \
+        "$cli_image" run --env php-docker -r
+done
 
-php_state="$(docker exec -i "$postgres_container" psql -U root -d database_bruno_php \
+differences="$(docker exec -i "$postgres_container" psql -X -q -U root -d database_bruno_php \
     -v ON_ERROR_STOP=1 -tA < "$project_dir/api-tests/bruno/operations/verify.sql")"
-java_state="$(docker exec -i "$postgres_container" psql -U root -d database_bruno_java \
-    -v ON_ERROR_STOP=1 -tA < "$project_dir/api-tests/bruno/operations/verify.sql")"
-
-if [[ "$php_state" != "$java_state" ]]; then
-    echo "Paridad de estado persistido incorrecta." >&2
-    echo "--- PHP ---" >&2
-    echo "$php_state" >&2
-    echo "--- Java ---" >&2
-    echo "$java_state" >&2
+if [[ "$differences" != '0' ]]; then
+    echo "Persistencia inesperada en database_bruno_php: $differences diferencias" >&2
     exit 1
 fi
-
-echo "PHP: estado persistido verificado e idéntico al de Java"
-echo "$php_state"
+echo "PHP: salud, estado inicial y operaciones verificados; persistencia esperada correcta"

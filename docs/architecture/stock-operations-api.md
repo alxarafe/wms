@@ -75,13 +75,23 @@ El visor y las operaciones consideran un hueco **no disponible** si `location.st
 
 ### Captura de caducidad del lote en recepción
 
-A petición del responsable, `POST /api/receipts` acepta `expirationDate` opcional (ISO-8601) y lo persiste sobre el lote referenciado con semántica de captura: se establece si el lote no tiene caducidad y se rechaza (`409`) si difiere de la almacenada. El lote sigue existiendo en el catálogo (se siembra o se crea fuera de la entrada); la entrada no crea lotes. PHP y Java implementan la misma validación y el mismo efecto, y la paridad se comprueba en la huella de `verify.sql`.
+A petición del responsable, `POST /api/receipts` acepta `expirationDate` opcional (ISO-8601) y lo persiste sobre el lote referenciado con semántica de captura: se establece si el lote no tiene caducidad y se rechaza (`409`) si difiere de la almacenada. El lote sigue existiendo en el catálogo (se siembra o se crea fuera de la entrada); la entrada no crea lotes. PHP y Java implementan la misma validación y el mismo efecto, y la comprobación PHP actual de `verify.sql` valida el resultado esperado; la revalidación de Java queda aplazada.
 
-## Cómo se verifica la paridad
+## Regresión Bruno y paridad aplazada
 
-El escenario de paridad ejecuta el mismo recorrido contra ambas APIs sobre la base de verificación reiniciada (migraciones `001` a `003`): entrada ARROZ LARGO 40 EA, entrada repetida (409), YOGUR FRESA sin lote (400), YOGUR FRESA con lote (201), salida parcial (409), salida con unidad incorrecta (400), salida completa (200), PALITOS CANGREJO con lote sin caducidad y `expirationDate` (201, la captura), caducidad distinta de la almacenada (409) y caducidad con formato inválido (400). Las respuestas de estado al final se comparan normalizadas (número `N` y `N.0` se consideran equivalentes y el `huCode` generado aleatoriamente se excluye); la huella incluye la caducidad de los lotes `L-YOG-001` y `L-PAL-001`.
+`./bin/bruno_operations_test.sh` prepara exclusivamente `public` de
+`database_bruno_php` con 001–003. Ejecuta las colecciones compartidas `health/`,
+`state/` (antes de modificar las semillas) y `operations/` (secuencias 01–10).
+Conserva entradas, errores por repetición/lote/caducidad, salida parcial rechazada,
+unidad incorrecta y salida completa. `verify.sql` comprueba contra un resultado
+esperado el stock final, las caducidades UTC de los dos lotes, tres movimientos
+INBOUND, uno OUTBOUND y una HU desligada; debe devolver cero diferencias.
 
-El recorrido también está disponible como colección Bruno en `api-tests/bruno/operations/` (secuencias `01`–`10` para PHP y `11`–`20` para Java). `./bin/bruno_operations_test.sh` la ejecuta contra ambas APIs sobre bases aisladas recreadas (migraciones `001` a `003`) y compara la huella de estado persistido entre PHP y Java.
+Antes el lanzador arrancaba PHP y Java y comparaba sus huellas. Ahora Java queda
+aparcado: los escenarios son únicos y cambiará solo el entorno cuando se active.
+No se afirma paridad actual sin ejecutar ambos stacks. Este recorrido sigue
+validando el modelo antiguo `public`, no la configuración v2. Véase la
+[decisión de pruebas compartidas](bruno-tests.md).
 
 ## Documentos relacionados
 

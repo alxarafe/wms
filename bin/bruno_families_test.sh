@@ -43,16 +43,12 @@ if [[ "$ready" -ne 1 ]]; then
 fi
 
 collection_dir="$project_dir/api-tests/bruno/families"
-php_files=()
-for file in "$collection_dir"/*-php-*.bru; do
-    php_files+=("$(basename "$file")")
-done
 
 project_name="$(docker inspect "$postgres_container" --format '{{ index .Config.Labels "com.docker.compose.project" }}')"
 cli_image="${BRUNO_CLI_IMAGE:-usebruno/cli:4.0.0}"
 docker run --rm --network "${project_name}_default" --entrypoint bru \
     -v "$collection_dir:/bruno:ro" -w /bruno \
-    "$cli_image" run --env docker "${php_files[@]}"
+    "$cli_image" run --env php-docker -r
 
 differences="$(docker exec -i "$postgres_container" psql -q -U root -d "$database_name" \
     -v ON_ERROR_STOP=1 -tA < "$collection_dir/verify.sql")"

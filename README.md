@@ -16,7 +16,7 @@ The repository implements the same domain using two independent stacks:
 - PHP 8.4+ (Vanilla + Flight)
 - Java 21 (Spring Boot adapters)
 
-The WMS domain is under development in both stacks. Both APIs expose `GET /api/health`, `POST /api/item-families`, `GET /api/warehouses/{id}/state`, `POST /api/receipts` and `POST /api/issues`. Family creation, the warehouse state view and the stock operations share one contract per endpoint across PHP and Java, exercised with Bruno against separate test databases.
+The WMS is a laboratory under development. PHP is the active implementation; Java adaptation is deferred until PHP is functional. Bruno scenarios are shared by contract and currently run only against PHP. Current PHP/Java parity is not claimed.
 
 ---
 
@@ -88,13 +88,14 @@ for prerequisites and the temporary aisle fixture used to test format locking.
 ### Run tests
 
 ```bash
-# Inside containers:
+# From the repository root, on the host:
 ./bin/php_test.sh     # PHPUnit (unit + integration + contract)
 ./bin/java_test.sh    # Maven (unit + architecture)
+./bin/bruno_test.sh          # All shared Bruno collections against PHP only
 ./bin/bruno_uoms_test.sh     # PHP API + Bruno uom catalogue (clean isolated v2 database)
 ./bin/bruno_items_test.sh    # PHP API + Bruno item catalogue (clean isolated v2 database)
 ./bin/bruno_families_test.sh # PHP API + Bruno item-family catalogue (clean isolated v2 database)
-./bin/bruno_operations_test.sh  # Receipts/issues parity scenario on isolated databases
+./bin/bruno_operations_test.sh  # PHP health, legacy state and receipts/issues on an isolated database
 
 # Full pipeline:
 ./bin/ci_local.sh     # PHP tests + Java tests
@@ -132,7 +133,7 @@ phases; the Java catalogue re-pairing is deferred. See
 | Java   | http://localhost:38080/api/health |
 | DB     | postgresql://localhost:5432 |
 
-The `POST /api/item-families` contract is documented in [docs/architecture/item-family-api.md](docs/architecture/item-family-api.md). The `GET /api/warehouses/{id}/state` endpoint exposes the warehouse layout together with the stock located in each slot for the viewer; both stacks honour the same contract and the seed migration `002_seed_demo_data.sql` provides the demo warehouse with id `01a0aca9-bc00-7010-8000-000000000001`. Stock receipts and issues (`POST /api/receipts` and `POST /api/issues`) follow the discrete model (one handling unit per slot, single-reference HU, full consumption on issue) documented in [docs/architecture/stock-operations-api.md](docs/architecture/stock-operations-api.md); the same scenario runs against both APIs in `api-tests/bruno/operations/`. After the Bruno script runs, its PHP and Java test APIs are available at `http://localhost:28081` and `http://localhost:28082`.
+The `POST /api/item-families` contract is documented in [docs/architecture/item-family-api.md](docs/architecture/item-family-api.md). The `GET /api/warehouses/{id}/state` endpoint exposes the warehouse layout together with the stock located in each slot for the viewer; this legacy endpoint still uses `public`, and the seed migration `002_seed_demo_data.sql` provides the demo warehouse with id `01a0aca9-bc00-7010-8000-000000000001`. Stock receipts and issues (`POST /api/receipts` and `POST /api/issues`) follow the discrete model (one handling unit per slot, single-reference HU, full consumption on issue) documented in [docs/architecture/stock-operations-api.md](docs/architecture/stock-operations-api.md); the shared scenarios in `api-tests/bruno/operations/` currently run against PHP only. Its test API remains available at `http://localhost:28081`. See the [Bruno guide](api-tests/bruno/README.md) for environments, isolated databases and later Java activation.
 
 ### Demo client
 

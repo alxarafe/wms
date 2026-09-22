@@ -175,7 +175,7 @@ incluido este caso negativo, se podrá preparar únicamente mediante HTTP.
 
 Informes JSON en `/tmp/wms-php-configuration.*/`. Las APIs y bases quedan disponibles
 para inspección en `http://localhost:28181` y `http://localhost:28182`; en Bruno
-abrir `api-tests/bruno/php-configuration` y usar `local-a` o `local-b`.
+abrir `api-tests/bruno/configuration` y usar `php-local-a` o `php-local-b`.
 El lanzador es el punto de entrada repetible: ejecutar la colección sobre datos
 ya creados debe producir conflictos, no limpiar la base por HTTP.
 

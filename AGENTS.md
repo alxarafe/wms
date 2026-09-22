@@ -2,7 +2,7 @@
 
 ## 1. Propósito y estado del proyecto
 
-Este repositorio es un proyecto incipiente de aprendizaje y experimentación para un sistema de gestión de almacenes (WMS). Parte de una plantilla de arquitectura hexagonal. El ejemplo de saludos se retiró; las APIs exponen actualmente una comprobación de salud, mientras que el dominio WMS sigue en desarrollo y aún no cuenta con casos de uso HTTP.
+Este repositorio es un proyecto incipiente de aprendizaje y experimentación para un sistema de gestión de almacenes (WMS). Parte de una plantilla de arquitectura hexagonal. El ejemplo de saludos se retiró. PHP expone salud, catálogo, configuración inicial v2 y los endpoints antiguos de estado y movimientos sobre `public`. El dominio WMS sigue en desarrollo; Java queda aparcado hasta que PHP esté funcional. Los escenarios Bruno son compartidos y actualmente se ejecutan solo contra PHP; no se afirma paridad vigente.
 
 Se mantienen dos implementaciones independientes, PHP y Java, para contrastar un mismo modelo conceptual y comportamiento observable. No debe presentarse el proyecto como un WMS terminado ni como una plataforma lista para producción sin evidencia que lo respalde.
 

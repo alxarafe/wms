@@ -18,7 +18,7 @@ PHP expone `POST /api/item-families` y `GET /api/item-families` con `Content-Typ
 
 En el esquema v2 los atributos de familia son un vínculo hacia `storage_attribute` (`family_storage_attribute`); no existe la distinción `target_type` FAMILY/LOCATION del esquema `public` eliminado. El catálogo `storage_attribute` se puebla con semillas en `005_seed_wms_review_v2_demo_data.sql` solo en entornos de desarrollo; la base de pruebas Bruno se monta con 004 (sin semillas) y por ahora las altas de la colección se hacen **sin atributos** (`attributes: []`).
 
-El caso de uso reside en Application y utiliza un puerto de repositorio. Los adaptadores de persistencia guardan la familia y sus vínculos en una transacción. Las APIs mantienen el mismo comportamiento observable para los escenarios incluidos en la colección Bruno.
+El caso de uso reside en Application y utiliza un puerto de repositorio. Los adaptadores de persistencia guardan la familia y sus vínculos en una transacción. Los escenarios Bruno describen el comportamiento PHP que Java deberá recuperar cuando se retome su adaptación.
 
 ## Listado de familias
 
@@ -26,8 +26,8 @@ El caso de uso reside en Application y utiliza un puerto de repositorio. Los ada
 
 ## Pruebas aisladas
 
-`bin/bruno_families_test.sh` usa la base dedicada `database_bruno_php`. En cada ejecución prepara una base limpia **solo con el esquema v2** (`database/migrations/004_create_wms_review_v2_schema.sql`), sin datos sembrados, y arranca la API de prueba PHP en el puerto local 28081. La colección realiza cinco altas por implementación con `attributes: []`, comprueba las respuestas y tres errores equivalentes (código duplicado, atributo no existente en el catálogo y cuerpo JSON sin objeto raíz). Al terminar, una consulta compara el contenido persistido completo con las cinco familias esperadas.
+`bin/bruno_families_test.sh` usa la base dedicada `database_bruno_php`. En cada ejecución prepara una base limpia **solo con el esquema v2** (`database/migrations/004_create_wms_review_v2_schema.sql`), sin datos sembrados, y arranca la API de prueba PHP en el puerto local 28081. La colección realiza cinco altas con `attributes: []`, comprueba las respuestas y tres errores equivalentes (código duplicado, atributo no existente en el catálogo y cuerpo JSON sin objeto raíz). Al terminar, una consulta compara el contenido persistido completo con las cinco familias esperadas.
 
-La cobertura de asignación de atributos de familia se aplaza hasta que exista un mecanismo para poblar `storage_attribute` sobre una base v2 limpia (mientras tanto, con 004 el catálogo está vacío). Java (ficheros `*-java-*.bru`) queda sin ejecutar hasta que su implementación se adapte al catálogo v2.
+La cobertura de asignación de atributos de familia se aplaza hasta que exista un mecanismo para poblar `storage_attribute` sobre una base v2 limpia (mientras tanto, con 004 el catálogo está vacío). Los escenarios son únicos y usan `base_url`; actualmente solo se ejecutan contra PHP. Java queda pendiente de adaptación al catálogo v2 y reutilizará estas mismas colecciones. Véase la [decisión de pruebas Bruno](bruno-tests.md).
 
 El servicio PostgreSQL debe estar arrancado. La base de prueba se conserva después para inspección; la siguiente ejecución la reinicia. La base `database` de desarrollo no se modifica. Este flujo requiere la migración 004 del repositorio.

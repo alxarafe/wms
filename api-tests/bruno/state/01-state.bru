@@ -1,0 +1,40 @@
+meta {
+  name: estado del almacén
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{base_url}}/api/warehouses/01a0aca9-bc00-7010-8000-000000000001/state
+  body: none
+  auth: none
+}
+
+headers {
+  Accept: application/json
+}
+
+tests {
+  const zones = res.getBody().zones;
+  test("expone el almacén demo y su topología", function () {
+    expect(res.getStatus()).to.equal(200);
+    expect(res.getBody().id).to.equal("01a0aca9-bc00-7010-8000-000000000001");
+    expect(res.getBody().code).to.equal("WH1");
+    expect(zones.length).to.equal(2);
+  });
+
+  const locations = zones.flatMap((zone) => zone.aisles.flatMap((aisle) => aisle.locations));
+  test("entrega los 26 huecos", function () {
+    expect(locations.length).to.equal(26);
+  });
+
+  const occupied = locations.filter((location) => location.references.length === 1);
+  test("muestra las tres HU sembradas", function () {
+    expect(occupied.length).to.equal(3);
+    expect(occupied.some((l) => l.code === "P-A-01-01" && l.references[0].itemCode === "YOGUR FRESA"
+      && l.references[0].quantity === 30 && l.references[0].unit === "EA"
+      && l.references[0].batchCode === "L-YOG-001")).to.equal(true);
+    expect(occupied.some((l) => l.code === "B-B-01-01" && l.references[0].itemCode === "LEJIA BLANCA"
+      && l.references[0].quantity === 12 && l.references[0].unit === "PAL")).to.equal(true);
+  });
+}

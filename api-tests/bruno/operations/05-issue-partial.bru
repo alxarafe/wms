@@ -1,0 +1,31 @@
+meta {
+  name: salida parcial 409
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{base_url}}/api/issues
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  Accept: application/json
+}
+
+body:json {
+  {
+    "locationId": "01a0aca9-bc00-7020-8000-000000000008",
+    "itemCode": "YOGUR FRESA",
+    "quantity": 29,
+    "unit": "EA"
+  }
+}
+
+tests {
+  test("solo permite sacar el total almacenado", function () {
+    expect(res.getStatus()).to.equal(409);
+  });
+}

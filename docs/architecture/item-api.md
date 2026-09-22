@@ -44,4 +44,4 @@ La respuesta de alta es `201` con `id` UUID v7, `sku`, `name`, `familyCode`, `ba
 
 `bin/bruno_items_test.sh` usa la base dedicada `database_bruno_php`. En cada ejecución prepara una base limpia **solo con el esquema v2** (`database/migrations/004_create_wms_review_v2_schema.sql`), sin datos sembrados, y arranca la API de prueba PHP en el puerto local 28081. La colección es autosuficiente: crea primero la familia `FOOD` y las unidades `BOX` y `PAL` mediante las APIs de `/api/item-families` y `/api/uoms` (necesarias como `baseUomCode`), después crea dos artículos (`BOLSA50`, `CAJA24`), comprueba el listado ordenado y tres errores equivalentes (`sku` duplicado, familia inexistente y cuerpo JSON sin objeto raíz). Al terminar, una consulta compara el contenido persistido completo con los dos artículos esperados.
 
-Java (ficheros `*-java-*.bru`) queda sin ejecutar hasta que su implementación se adapte al catálogo v2.
+Los escenarios son únicos y usan `base_url`; actualmente solo se ejecutan contra PHP. Java queda pendiente de adaptación al catálogo v2 y reutilizará estas mismas colecciones. Véase la [decisión de pruebas Bruno](bruno-tests.md).

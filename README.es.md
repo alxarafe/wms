@@ -16,7 +16,7 @@ El repositorio implementa en el mismo dominio dos stacks independientes:
 - PHP 8.4 (Vanilla)
 - Java 21 (Spring Boot adapters)
 
-El dominio WMS está en desarrollo en ambos stacks. Las APIs exponen `GET /api/health`, `POST /api/item-families`, `GET /api/warehouses/{id}/state`, `POST /api/receipts` y `POST /api/issues`. La creación de familias, el visor de estado y las operaciones de stock comparten un único contrato por endpoint entre PHP y Java, verificado con Bruno contra bases de prueba independientes.
+El WMS es un laboratorio en desarrollo. PHP es la implementación activa; la adaptación de Java queda aplazada hasta que PHP esté funcional. Los escenarios Bruno se comparten por contrato y actualmente se ejecutan solo contra PHP. No se afirma paridad PHP/Java vigente.
 
 ---
 
@@ -88,13 +88,14 @@ del formato: [configuración PHP](docs/architecture/php-configuration-api.md).
 ### Ejecutar tests
 
 ```bash
-# Dentro de los contenedores:
+# Desde la raíz del repositorio, en el anfitrión:
 ./bin/php_test.sh     # PHPUnit (unitarios + integración + contrato)
 ./bin/java_test.sh    # Maven (unitarios + arquitectura)
+./bin/bruno_test.sh          # Todas las colecciones Bruno compartidas, solo contra PHP
 ./bin/bruno_uoms_test.sh     # API PHP + Bruno del catálogo de unidades (base aislada v2 limpia)
 ./bin/bruno_items_test.sh    # API PHP + Bruno del catálogo de artículos (base aislada v2 limpia)
 ./bin/bruno_families_test.sh # API PHP + Bruno del catálogo de familias (base aislada v2 limpia)
-./bin/bruno_operations_test.sh  # Escenario de paridad de entradas/salidas en bases aisladas
+./bin/bruno_operations_test.sh  # Salud, estado antiguo y entradas/salidas PHP en base aislada
 
 # Pipeline completo:
 ./bin/ci_local.sh     # Tests PHP + tests Java
@@ -132,7 +133,7 @@ adaptación del catálogo Java. Ver
 | Java   | http://localhost:38080/api/health |
 | DB     | postgresql://localhost:5432 |
 
-El contrato de `POST /api/item-families` se describe en [docs/architecture/item-family-api.md](docs/architecture/item-family-api.md). El visor consume `GET /api/warehouses/{id}/state`, que devuelve la topología y el stock ubicado de un almacén con el mismo contrato en ambos stacks; la migración `002_seed_demo_data.sql` siembra el almacén de demostración con id `01a0aca9-bc00-7010-8000-000000000001`. Las entradas y salidas (`POST /api/receipts` y `POST /api/issues`) siguen el modelo discreto (1 HU por hueco, HU monoreferencia y consumo completo en la salida) descrito en [docs/architecture/stock-operations-api.md](docs/architecture/stock-operations-api.md); el mismo escenario se ejecuta contra ambas APIs en `api-tests/bruno/operations/`. Las APIs de prueba Bruno se consultan en `http://localhost:28081` (PHP) y `http://localhost:28082` (Java) tras ejecutar el script.
+El contrato de `POST /api/item-families` se describe en [docs/architecture/item-family-api.md](docs/architecture/item-family-api.md). El visor consume `GET /api/warehouses/{id}/state`, que devuelve la topología y el stock ubicado de un almacén sobre el esquema antiguo `public`; la migración `002_seed_demo_data.sql` siembra el almacén de demostración con id `01a0aca9-bc00-7010-8000-000000000001`. Las entradas y salidas (`POST /api/receipts` y `POST /api/issues`) siguen el modelo discreto (1 HU por hueco, HU monoreferencia y consumo completo en la salida) descrito en [docs/architecture/stock-operations-api.md](docs/architecture/stock-operations-api.md); los escenarios compartidos de `api-tests/bruno/operations/` se ejecutan actualmente solo contra PHP. Su API de prueba queda disponible en `http://localhost:28081`. Consulta la [guía de Bruno](api-tests/bruno/README.md) para los entornos, las bases aisladas y la activación posterior de Java.
 
 ### Cliente de demostración
 

@@ -39,7 +39,7 @@ done
 reset_databases
 
 project_name="$(docker inspect "$postgres_container" --format '{{ index .Config.Labels "com.docker.compose.project" }}')"
-collection_dir="$project_dir/api-tests/bruno/php-configuration"
+collection_dir="$project_dir/api-tests/bruno/configuration"
 cli_image="${BRUNO_CLI_IMAGE:-usebruno/cli:4.0.0}"
 for suffix in a b; do
     service="php-config-$suffix"

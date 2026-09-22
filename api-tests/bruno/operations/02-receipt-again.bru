@@ -1,0 +1,31 @@
+meta {
+  name: entrada repetida sobre hueco ocupado
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{base_url}}/api/receipts
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  Accept: application/json
+}
+
+body:json {
+  {
+    "locationId": "01a0aca9-bc00-7020-8000-000000000007",
+    "itemCode": "ARROZ LARGO",
+    "quantity": 40,
+    "unit": "EA"
+  }
+}
+
+tests {
+  test("rechaza una segunda entrada en un hueco ocupado", function () {
+    expect(res.getStatus()).to.equal(409);
+  });
+}

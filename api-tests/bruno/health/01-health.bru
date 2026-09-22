@@ -1,0 +1,23 @@
+meta {
+  name: Comprobación de salud
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{base_url}}/api/health
+  body: none
+  auth: none
+}
+
+headers {
+  Accept: application/json
+}
+
+tests {
+  test("API disponible", function () {
+    expect(res.getStatus()).to.equal(200);
+    expect(res.getBody().status).to.equal("ok");
+    expect(res.getBody().timestamp).to.be.a("string").and.not.empty;
+  });
+}

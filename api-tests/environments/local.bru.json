@@ -1,6 +1,9 @@
 {
   "env": [
-    { "name": "php_base_url", "value": "http://localhost:8081", "type": "text" },
-    { "name": "java_base_url", "value": "http://localhost:8082", "type": "text" }
+    {
+      "name": "base_url",
+      "value": "http://localhost:28081",
+      "type": "text"
+    }
   ]
 }

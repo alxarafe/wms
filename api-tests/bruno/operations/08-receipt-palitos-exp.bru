@@ -1,0 +1,37 @@
+meta {
+  name: captura caducidad PALITOS CANGREJO
+  type: http
+  seq: 8
+}
+
+post {
+  url: {{base_url}}/api/receipts
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  Accept: application/json
+}
+
+body:json {
+  {
+    "locationId": "01a0aca9-bc00-7020-8000-000000000003",
+    "itemCode": "PALITOS CANGREJO",
+    "quantity": 20,
+    "unit": "EA",
+    "batchCode": "L-PAL-001",
+    "expirationDate": "2027-03-15T00:00:00Z"
+  }
+}
+
+tests {
+  test("captura la caducidad del lote sin ella y ocupa P-A-02-01", function () {
+    expect(res.getStatus()).to.equal(201);
+    expect(res.getBody().code).to.equal("P-A-02-01");
+    expect(res.getBody().references[0].itemCode).to.equal("PALITOS CANGREJO");
+    expect(res.getBody().references[0].batchCode).to.equal("L-PAL-001");
+    expect(res.getBody().references[0].quantity).to.equal(20);
+  });
+}
