@@ -1,0 +1,30 @@
+meta {
+  name: PHP - código no válido
+  type: http
+  seq: 10
+}
+
+post {
+  url: {{php_base_url}}/api/uoms
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  Accept: application/json
+}
+
+body:json {
+  {
+    "code": "ea",
+    "description": "Minúsculas no permitidas"
+  }
+}
+
+tests {
+  test("rechaza un código en minúsculas", function () {
+    expect(res.getStatus()).to.equal(400);
+    expect(res.getBody().error).to.contain("UomCode must be uppercase alphanumeric");
+  });
+}

@@ -1,0 +1,27 @@
+meta {
+  name: PHP - JSON sin objeto raíz
+  type: http
+  seq: 11
+}
+
+post {
+  url: {{php_base_url}}/api/uoms
+  body: none
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  Accept: application/json
+}
+
+script:pre-request {
+  req.setBody("json-root-string", { raw: true });
+}
+
+tests {
+  test("rechaza JSON sin objeto raíz", function () {
+    expect(res.getStatus()).to.equal(400);
+    expect(res.getBody().error).to.equal("Invalid JSON body.");
+  });
+}

@@ -1,0 +1,32 @@
+meta {
+  name: PHP - crear LTR
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{php_base_url}}/api/uoms
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  Accept: application/json
+}
+
+body:json {
+  {
+    "code": "LTR",
+    "description": "Litro"
+  }
+}
+
+tests {
+  test("crea LTR con su descripción", function () {
+    expect(res.getStatus()).to.equal(201);
+    expect(res.getBody().id).to.match(/^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i);
+    expect(res.getBody().code).to.equal("LTR");
+    expect(res.getBody().description).to.equal("Litro");
+  });
+}
