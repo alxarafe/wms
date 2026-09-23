@@ -48,7 +48,7 @@
 <section class="panel">
   <header>
     <h3>Familias de artículos</h3>
-    <p class="meta">Conjunto de artículos con atributos comunes (IS_FOOD, IS_REFRIGERATED…).</p>
+    <p class="meta">Conjunto de artículos con atributos comunes (IS_FOOD, CHILLED…).</p>
   </header>
 
   <div class="list">
@@ -83,7 +83,7 @@
     </label>
     <label class="field">
       <span>Atributos (separados por coma, opcional)</span>
-      <input bind:value={attributes} placeholder="IS_FOOD, IS_REFRIGERATED" />
+      <input bind:value={attributes} placeholder="IS_FOOD, CHILLED" />
     </label>
     <button class="run" disabled={!ready} onclick={() => void create()}>Crear familia</button>
   </div>

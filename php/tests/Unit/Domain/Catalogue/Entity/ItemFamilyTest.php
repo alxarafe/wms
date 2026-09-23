@@ -7,7 +7,7 @@ namespace Tests\Unit\Domain\Catalogue\Entity;
 use Alxarafe\App\Domain\Catalogue\Entity\ItemFamily;
 use Alxarafe\App\Domain\Catalogue\ValueObject\ItemFamilyCode;
 use Alxarafe\App\Domain\Catalogue\ValueObject\ItemFamilyId;
-use Alxarafe\App\Domain\Catalogue\ValueObject\StorageAttributeId;
+use Alxarafe\App\Domain\Catalogue\ValueObject\StorageAttributeCode;
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 
@@ -34,12 +34,12 @@ final class ItemFamilyTest extends TestCase
         );
     }
 
-    public function testDuplicateAttributeIdentifiers(): void
+    public function testDuplicateAttributeCodes(): void
     {
         $this->expectException(InvalidArgumentException::class);
         new ItemFamily(ItemFamilyId::generate(), new ItemFamilyCode('FOOD'), 'Food', [
-            new StorageAttributeId('01900000-0000-7000-8000-00000000abcd'),
-            new StorageAttributeId('01900000-0000-7000-8000-00000000ABCD'),
+            new StorageAttributeCode('FOOD'),
+            new StorageAttributeCode('FOOD'),
         ]);
     }
 }

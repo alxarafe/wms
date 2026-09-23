@@ -14,7 +14,7 @@ use InvalidArgumentException;
  * Entity representing a warehouse compatibility or storage constraint rule.
  *
  * Rules configure compatibility, e.g., a COLD merchandise attribute
- * REQUIRES a REFRIGERATED location attribute at the LOCATION scope, or
+ * REQUIRES a CHILLED location attribute at the LOCATION scope, or
  * a HAZMAT merchandise attribute FORBIDS a standard storage location.
  */
 final readonly class CompatibilityRule

@@ -21,10 +21,10 @@ tests {
     expect(body.length).to.equal(5);
     expect(body.map((f) => f.code)).to.eql([
       "CHEMICAL",
+      "CHILLED_FOOD",
       "DRY_FOOD",
       "FROZEN_FOOD",
-      "NEUTRAL",
-      "REFRIGERATED_FOOD"
+      "NEUTRAL"
     ]);
     body.forEach((f) => {
       expect(f.id).to.match(/^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i);

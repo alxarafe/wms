@@ -47,7 +47,7 @@ final class StorageAttributeTest extends TestCase
     /** @return iterable<string, array{string}> */
     public static function invalidCodes(): iterable
     {
-        foreach (['', '  ', '1FOOD', 'HAS FOOD', str_repeat('A', 31), 'IS_FOOD', 'is_chemical', 'IS_REFRIGERATED', 'IS_FROZEN'] as $index => $code) {
+        foreach (['', '  ', '1FOOD', 'HAS FOOD', str_repeat('A', 31), 'IS_FOOD', 'is_chemical', 'IS_CHILLED', 'IS_FROZEN'] as $index => $code) {
             yield (string) $index => [$code];
         }
     }

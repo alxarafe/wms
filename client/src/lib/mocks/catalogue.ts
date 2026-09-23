@@ -9,14 +9,14 @@ import type {
 // Devuelve el mismo contrato que GET/POST /api/item-families en PHP y Java.
 // Los atributos FAMILY disponibles son los que siembra la migración 001.
 
-const FAMILY_ATTRIBUTES = new Set(['IS_FOOD', 'IS_REFRIGERATED', 'IS_CHEMICAL', 'IS_FROZEN']);
+const FAMILY_ATTRIBUTES = new Set(['IS_FOOD', 'CHILLED', 'IS_CHEMICAL', 'IS_FROZEN']);
 
 let families: ItemFamily[] = [
   {
     id: '01a0aca9-bc00-7701-8000-000000000001',
-    code: 'REFRIGERATED_FOOD',
+    code: 'CHILLED_FOOD',
     name: 'Alimentos refrigerados',
-    attributes: ['IS_FOOD', 'IS_REFRIGERATED'],
+    attributes: ['IS_FOOD', 'CHILLED'],
   },
   {
     id: '01a0aca9-bc00-7702-8000-000000000002',

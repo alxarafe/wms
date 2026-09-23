@@ -59,13 +59,13 @@ final class StorageAttributePersistenceTest extends TestCase
         self::assertEquals($chilled, $this->attributes->findByCode(new StorageAttributeCode('CHILLED')));
         self::assertSame('THERMAL', $this->attributes->find($chilled->id())?->exclusiveGroupCode());
         self::assertSame(['CHILLED', 'FOOD'], array_map(static fn (StorageAttribute $a): string => $a->code()->value(), $this->attributes->findAll()));
-        $family = (new CreateItemFamily($this->families))->execute('ALIMENTOS', 'Alimentos', [$food->id()->value(), $chilled->id()->value()]);
+        $family = (new CreateItemFamily($this->families))->execute('ALIMENTOS', 'Alimentos', [$food->code()->value(), $chilled->code()->value()]);
         $stored = $this->families->findByCode($family->code());
         self::assertNotNull($stored);
         self::assertSame($family->id()->value(), $stored->id()->value());
         $ids = array_map(static fn (StorageAttributeId $id): string => $id->value(), $stored->attributes());
-        self::assertEqualsCanonicalizing([$food->id()->value(), $chilled->id()->value()], $ids);
-        self::assertSame(2, $this->count('family_storage_attribute'));
+        self::assertEqualsCanonicalizing([$food->code()->value(), $chilled->code()->value()], $ids);
+        self::assertSame(2, $this->countRows('family_storage_attribute'));
         self::assertNull($food->exclusiveGroupCode());
         self::assertFalse($this->pdo->inTransaction());
     }
@@ -77,14 +77,14 @@ final class StorageAttributePersistenceTest extends TestCase
             $this->attributes->save(new StorageAttribute(new StorageAttributeId(Uuid::generate()), $food->code(), 'Duplicado'));
             self::fail('Unique constraint must be enforced.');
         } catch (StorageAttributeConflict) {
-            self::assertSame(1, $this->count('storage_attribute'));
+            self::assertSame(1, $this->countRows('storage_attribute'));
         }
         (new CreateItemFamily($this->families))->execute('ALIMENTOS', 'Alimentos', []);
         try {
             $this->families->save(new ItemFamily(ItemFamilyId::generate(), new ItemFamilyCode('ALIMENTOS'), 'Duplicada'));
             self::fail('Duplicate family must fail.');
         } catch (ItemFamilyConflict) {
-            self::assertSame(1, $this->count('item_family'));
+            self::assertSame(1, $this->countRows('item_family'));
             self::assertFalse($this->pdo->inTransaction());
         }
     }
@@ -93,24 +93,24 @@ final class StorageAttributePersistenceTest extends TestCase
     {
         $food = $this->attribute('FOOD');
         try {
-            (new CreateItemFamily($this->families))->execute('REJECTED', 'Rechazada', [$food->id()->value(), Uuid::generate()]);
+            (new CreateItemFamily($this->families))->execute('REJECTED', 'Rechazada', [$food->code()->value(), 'MISSING']);
             self::fail('Missing reference must fail.');
         } catch (StorageAttributeNotFound) {
-            self::assertSame(0, $this->count('item_family'));
-            self::assertSame(0, $this->count('family_storage_attribute'));
-            self::assertSame(1, $this->count('storage_attribute'));
+            self::assertSame(0, $this->countRows('item_family'));
+            self::assertSame(0, $this->countRows('family_storage_attribute'));
+            self::assertSame(1, $this->countRows('storage_attribute'));
         }
     }
 
     public function testRepositoryRechecksReferencesBeforeInsert(): void
     {
-        $missing = new StorageAttributeId(Uuid::generate());
+        $missing = new StorageAttributeCode('MISSING');
         try {
             $this->families->save(new ItemFamily(ItemFamilyId::generate(), new ItemFamilyCode('REJECTED'), 'Rechazada', [$missing]));
             self::fail('Repository must recheck references inside its transaction.');
         } catch (StorageAttributeNotFound) {
             self::assertFalse($this->pdo->inTransaction());
-            self::assertSame(0, $this->count('item_family'));
+            self::assertSame(0, $this->countRows('item_family'));
         }
     }
 
@@ -132,9 +132,9 @@ final class StorageAttributePersistenceTest extends TestCase
             } catch (PDOException $error) {
                 self::assertSame('WMS02', $error->getCode());
                 self::assertFalse($this->pdo->inTransaction());
-                self::assertSame(0, $this->count('item_family'));
-                self::assertSame(0, $this->count('family_storage_attribute'));
-                self::assertSame(2, $this->count('storage_attribute'));
+                self::assertSame(0, $this->countRows('item_family'));
+                self::assertSame(0, $this->countRows('family_storage_attribute'));
+                self::assertSame(2, $this->countRows('storage_attribute'));
             }
         } finally {
             $this->pdo->exec('DROP TRIGGER reject_frozen_link ON wms_review_v2.family_storage_attribute');
@@ -152,9 +152,9 @@ final class StorageAttributePersistenceTest extends TestCase
         );
         $other->exec("SET lock_timeout = '100ms'");
         $this->pdo->beginTransaction();
-        self::assertSame([$food->id()->value()], $this->families->existingAttributeIds([$food->id()]));
+        self::assertSame([$food->code()->value()], $this->families->existingAttributeCodes([new StorageAttributeCode($food->code()->value())]));
         try {
-            $other->prepare('DELETE FROM wms_review_v2.storage_attribute WHERE id = ?')->execute([$food->id()->value()]);
+            $other->prepare('DELETE FROM wms_review_v2.storage_attribute WHERE id = ?')->execute([$food->code()->value()]);
             self::fail('Referenced row must be locked.');
         } catch (PDOException $error) {
             self::assertSame('55P03', $error->getCode());
@@ -166,12 +166,12 @@ final class StorageAttributePersistenceTest extends TestCase
     public function testMigrationPreservesLegacyIdAndFamilyLink(): void
     {
         $food = $this->attribute('FOOD');
-        $family = (new CreateItemFamily($this->families))->execute('ALIMENTOS', 'Alimentos', [$food->id()->value()]);
+        $family = (new CreateItemFamily($this->families))->execute('ALIMENTOS', 'Alimentos', [$food->code()->value()]);
         $this->prepareLegacySchema();
-        $this->pdo->prepare("UPDATE wms_review_v2.storage_attribute SET code = 'IS_FOOD' WHERE id = ?")->execute([$food->id()->value()]);
+        $this->pdo->prepare("UPDATE wms_review_v2.storage_attribute SET code = 'IS_FOOD' WHERE id = ?")->execute([$food->code()->value()]);
         $this->pdo->exec($this->migration());
         self::assertSame('FOOD', $this->attributes->find($food->id())?->code()->value());
-        self::assertSame($food->id()->value(), $this->families->findByCode($family->code())?->attributes()[0]->value());
+        self::assertSame($food->code()->value(), $this->families->findByCode($family->code())?->attributes()[0]->value());
         $this->pdo->rollBack();
     }
 
@@ -187,7 +187,7 @@ final class StorageAttributePersistenceTest extends TestCase
         } catch (PDOException $error) {
             self::assertStringContainsString('codes collide', $error->getMessage());
             $this->pdo->rollBack();
-            self::assertSame(1, $this->count('storage_attribute'));
+            self::assertSame(1, $this->countRows('storage_attribute'));
             self::assertEquals($food, $this->attributes->find($food->id()));
         }
     }
@@ -213,7 +213,7 @@ final class StorageAttributePersistenceTest extends TestCase
         return (new CreateStorageAttribute($this->attributes))->execute($code, $code);
     }
 
-    private function count(string $table): int
+    private function countRows(string $table): int
     {
         $statement = $this->pdo->query('SELECT count(*) FROM wms_review_v2.' . $table);
         self::assertInstanceOf(\PDOStatement::class, $statement);

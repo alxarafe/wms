@@ -4,14 +4,14 @@
 
 Las familias se relacionan con atributos del catálogo
 wms_review_v2.storage_attribute mediante family_storage_attribute. La API
-recibe UUID de atributos en attributes y no crea atributos implícitamente.
+recibe códigos de atributos en attributes y no crea atributos implícitamente.
 
-Los códigos históricos IS_FOOD, IS_REFRIGERATED, IS_FROZEN e IS_CHEMICAL no
+Los códigos históricos IS_FOOD, IS_CHILLED, IS_FROZEN e IS_CHEMICAL no
 forman parte del contrato vigente. La migración 007 los transforma,
 respectivamente, en FOOD, CHILLED, FROZEN y CHEMICAL, conservando UUID y
 vínculos. El catálogo actual usa esos códigos neutrales.
 
-Un atributo desconocido o que no sea un UUID válido se rechaza con 422.
+Un código de atributo inválido se rechaza con 422 y una referencia inexistente con 404.
 
 ## Límites y evolución
 

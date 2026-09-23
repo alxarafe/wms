@@ -8,7 +8,7 @@ use Alxarafe\App\Application\Catalogue\ItemFamilyRepository;
 use Alxarafe\App\Domain\Catalogue\Entity\ItemFamily;
 use Alxarafe\App\Domain\Catalogue\ValueObject\ItemFamilyCode;
 use Alxarafe\App\Domain\Catalogue\ValueObject\ItemFamilyId;
-use Alxarafe\App\Domain\Catalogue\ValueObject\StorageAttributeId;
+use Alxarafe\App\Domain\Catalogue\ValueObject\StorageAttributeCode;
 use Alxarafe\App\Application\Catalogue\StorageAttributeNotFound;
 use Alxarafe\App\Application\Catalogue\ItemFamilyConflict;
 use PDOException;
@@ -57,12 +57,12 @@ final readonly class PdoItemFamilyRepository implements ItemFamilyRepository
     private function hydrate(array $row): ItemFamily
     {
         $codes = array_map(
-            static fn (string $value): StorageAttributeId => new StorageAttributeId($value),
+            static fn (string $value): StorageAttributeCode => new StorageAttributeCode($value),
             array_values($this->statement(
                 sprintf(
-                    'SELECT sa.id FROM %s sa '
+                    'SELECT sa.code FROM %s sa '
                     . 'JOIN %s fsa ON fsa.attribute_id = sa.id '
-                    . 'WHERE fsa.family_id = :id ORDER BY sa.id',
+                    . 'WHERE fsa.family_id = :id ORDER BY sa.code',
                     Database::qualified(self::STORAGE_ATTRIBUTE),
                     Database::qualified(self::FAMILY_STORAGE_ATTRIBUTE),
                 ),
@@ -83,18 +83,18 @@ final readonly class PdoItemFamilyRepository implements ItemFamilyRepository
         return $statement;
     }
 
-    public function existingAttributeIds(array $codes): array
+    public function existingAttributeCodes(array $codes): array
     {
         if ($codes === []) {
             return [];
         }
         $placeholders = implode(', ', array_fill(0, count($codes), '?'));
         $statement = $this->pdo->prepare(sprintf(
-            'SELECT id FROM %s WHERE id IN (%s) ORDER BY id' . ($this->pdo->inTransaction() ? ' FOR KEY SHARE' : ''),
+            'SELECT code FROM %s WHERE code IN (%s) ORDER BY code' . ($this->pdo->inTransaction() ? ' FOR KEY SHARE' : ''),
             Database::qualified(self::STORAGE_ATTRIBUTE),
             $placeholders,
         ));
-        $statement->execute(array_map(static fn (StorageAttributeId $code): string => $code->value(), $codes));
+        $statement->execute(array_map(static fn (StorageAttributeCode $code): string => $code->value(), $codes));
         return array_values($statement->fetchAll(PDO::FETCH_COLUMN));
     }
 
@@ -102,9 +102,22 @@ final readonly class PdoItemFamilyRepository implements ItemFamilyRepository
     {
         $this->pdo->beginTransaction();
         try {
-            $ids = array_map(static fn (StorageAttributeId $id): string => $id->value(), $family->attributes());
-            if (array_diff($ids, $this->existingAttributeIds($family->attributes())) !== []) {
-                throw new StorageAttributeNotFound('Storage attribute not found.');
+            $codes = $family->attributes();
+            $attributeIdsByCode = [];
+            if ($codes !== []) {
+                $placeholders = implode(', ', array_fill(0, count($codes), '?'));
+                $attributeStatement = $this->pdo->prepare(sprintf(
+                    'SELECT id, code FROM %s WHERE code IN (%s) ORDER BY code FOR KEY SHARE',
+                    Database::qualified(self::STORAGE_ATTRIBUTE),
+                    $placeholders,
+                ));
+                $attributeStatement->execute(array_map(static fn (StorageAttributeCode $code): string => $code->value(), $codes));
+                foreach ($attributeStatement->fetchAll(PDO::FETCH_ASSOC) as $attribute) {
+                    $attributeIdsByCode[$attribute['code']] = $attribute['id'];
+                }
+                if (count($attributeIdsByCode) !== count($codes)) {
+                    throw new StorageAttributeNotFound('Storage attribute not found.');
+                }
             }
             $statement = $this->pdo->prepare(sprintf(
                 'INSERT INTO %s (id, code, name) VALUES (?, ?, ?)',
@@ -116,7 +129,7 @@ final readonly class PdoItemFamilyRepository implements ItemFamilyRepository
                 Database::qualified(self::FAMILY_STORAGE_ATTRIBUTE),
             ));
             foreach ($family->attributes() as $attribute) {
-                $link->execute([$family->id()->value(), $attribute->value()]);
+                $link->execute([$family->id()->value(), $attributeIdsByCode[$attribute->value()]]);
             }
             $this->pdo->commit();
         } catch (Throwable $error) {

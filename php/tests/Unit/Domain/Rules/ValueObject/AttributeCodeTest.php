@@ -48,8 +48,8 @@ final class AttributeCodeTest extends TestCase
 
     public function testEquals(): void
     {
-        $a = new AttributeCode('REFRIGERATED');
-        $b = new AttributeCode('REFRIGERATED');
+        $a = new AttributeCode('CHILLED');
+        $b = new AttributeCode('CHILLED');
         self::assertTrue($a->equals($b));
     }
 

@@ -96,12 +96,12 @@ Estado contrastado con las rutas, adaptadores y pruebas PHP del repositorio:
 | Tipos de HU | Alta y listado HTTP, campos y persistencia probados. | Crear el tipo no crea una HU física. |
 | Tipos de hueco y políticas | Altas, consultas, referencias, validaciones y persistencia probadas. | Los movimientos antiguos de public todavía no aplican estas políticas. |
 | Unidades y artículos | Altas, listados y errores del contrato actual probados con SQL. | No prueban todavía la integración completa con movimientos. |
-| Familias sin atributos | Altas, listado, rechazos y persistencia probados por Bruno. | La suite families usa deliberadamente attributes: []. |
-| Catálogo y familias con atributos | El código PHP crea, lista y consulta storage_attribute; valida UUID existentes y guarda/lee vínculos en family_storage_attribute. Las pruebas de persistencia cubren creación, duplicados, referencias ausentes, rollback y migración 007. | El recorrido HTTP completo del catálogo todavía no está incluido en una colección Bruno. |
+| Familias y atributos | La suite families crea CHILLED_FOOD con FOOD y CHILLED, además de familias sin atributos, y verifica sus vínculos. | La suite usa una fixture mínima de atributos; no carga todas las semillas v2. |
+| Catálogo y familias con atributos | El código PHP crea, lista y consulta storage_attribute; valida códigos existentes y guarda/lee vínculos en family_storage_attribute. Las pruebas de persistencia cubren creación, duplicados, referencias ausentes, rollback y migración 007. | El recorrido HTTP de familias con atributos está cubierto por la colección families. |
 
 La gestión del catálogo usa UUID estables para las relaciones y códigos legibles
 para la consulta del catálogo. La API no crea atributos implícitamente al crear
-una familia. Los códigos históricos IS_FOOD, IS_CHEMICAL, IS_REFRIGERATED e
+una familia. Los códigos históricos IS_FOOD, IS_CHEMICAL, IS_CHILLED e
 IS_FROZEN se normalizan mediante la migración 007 a FOOD, CHEMICAL, CHILLED y
 FROZEN, conservando UUID y vínculos.
 

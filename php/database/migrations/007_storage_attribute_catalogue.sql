@@ -7,7 +7,7 @@ BEGIN
         GROUP BY CASE upper(btrim(code))
             WHEN 'IS_FOOD' THEN 'FOOD'
             WHEN 'IS_CHEMICAL' THEN 'CHEMICAL'
-            WHEN 'IS_REFRIGERATED' THEN 'CHILLED'
+            WHEN 'IS_CHILLED' THEN 'CHILLED'
             WHEN 'IS_FROZEN' THEN 'FROZEN'
             ELSE upper(btrim(code)) END
         HAVING count(*) > 1
@@ -19,14 +19,14 @@ UPDATE wms_review_v2.storage_attribute
 SET code = CASE upper(btrim(code))
         WHEN 'IS_FOOD' THEN 'FOOD'
         WHEN 'IS_CHEMICAL' THEN 'CHEMICAL'
-        WHEN 'IS_REFRIGERATED' THEN 'CHILLED'
+        WHEN 'IS_CHILLED' THEN 'CHILLED'
         WHEN 'IS_FROZEN' THEN 'FROZEN'
         ELSE upper(btrim(code)) END,
     exclusive_group_code = upper(btrim(exclusive_group_code));
 ALTER TABLE wms_review_v2.storage_attribute
     ADD CONSTRAINT storage_attribute_neutral_code CHECK (
         code ~ '^[A-Z][A-Z0-9_]{0,29}$'
-        AND code NOT IN ('IS_FOOD', 'IS_CHEMICAL', 'IS_REFRIGERATED', 'IS_FROZEN')
+        AND code NOT IN ('IS_FOOD', 'IS_CHEMICAL', 'IS_CHILLED', 'IS_FROZEN')
     ),
     ADD CONSTRAINT storage_attribute_name_not_blank CHECK (name ~ '[^[:space:]]'),
     ADD CONSTRAINT storage_attribute_group_code CHECK (

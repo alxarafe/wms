@@ -2,10 +2,10 @@ SET search_path TO wms_review_v2;
 
 WITH expected (code, name, attributes) AS (
     VALUES
-        ('REFRIGERATED_FOOD', 'Alimentos refrigerados', ''),
-        ('FROZEN_FOOD', 'Alimentos congelados', ''),
-        ('DRY_FOOD', 'Alimentos secos', ''),
-        ('CHEMICAL', 'Productos químicos', ''),
+        ('CHILLED_FOOD', 'Alimentos refrigerados', 'CHILLED,FOOD'),
+        ('FROZEN_FOOD', 'Alimentos congelados', 'FOOD,FROZEN'),
+        ('DRY_FOOD', 'Alimentos secos', 'FOOD'),
+        ('CHEMICAL', 'Productos químicos', 'CHEMICAL'),
         ('NEUTRAL', 'Productos neutros', '')
 ), actual AS (
     SELECT f.code, f.name,

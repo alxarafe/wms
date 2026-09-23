@@ -25,6 +25,13 @@ docker exec "$postgres_container" psql -U root -d "$database_name" -v ON_ERROR_S
     -c 'DROP SCHEMA IF EXISTS wms_review_v2 CASCADE;' >/dev/null
 docker exec -i "$postgres_container" psql -U root -d "$database_name" -v ON_ERROR_STOP=1 \
     < "$migration" >/dev/null
+# Fixture mínima para probar vínculos de familias con atributos sin cargar las semillas completas.
+docker exec "$postgres_container" psql -U root -d "$database_name" -v ON_ERROR_STOP=1 -c \
+    "INSERT INTO wms_review_v2.storage_attribute (id, code, name, exclusive_group_code) VALUES \
+        ('01a0aca9-bc00-8040-8000-000000000001', 'CHILLED', 'Refrigerado', 'THERMAL'), \
+        ('01a0aca9-bc00-8040-8000-000000000002', 'FROZEN', 'Congelado', 'THERMAL'), \
+        ('01a0aca9-bc00-8040-8000-000000000003', 'FOOD', 'Alimento', NULL), \
+        ('01a0aca9-bc00-8040-8000-000000000004', 'CHEMICAL', 'Químico', NULL);" >/dev/null
 
 "${compose[@]}" up -d --force-recreate --no-deps php-api-test
 
