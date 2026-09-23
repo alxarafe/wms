@@ -22,3 +22,7 @@ entrega: almacenes, tipos HU, tipos de hueco y políticas. Sin sincronización J
 
 [Decisión Bruno](bruno-tests.md): un escenario por contrato, ejecución actual solo
 PHP y activación posterior de Java sin duplicar las peticiones.
+
+## Catálogo de atributos
+
+Consulta el contrato vigente en storage-attribute-api.md.

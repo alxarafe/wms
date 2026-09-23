@@ -14,6 +14,7 @@ use Alxarafe\App\Infrastructure\Http\GetUomsController;
 use Alxarafe\App\Infrastructure\Http\GetWarehouseStateController;
 use Alxarafe\App\Infrastructure\Http\PostIssuesController;
 use Alxarafe\App\Infrastructure\Http\PostReceiptsController;
+use Alxarafe\App\Infrastructure\Http\StorageAttributeController;
 use flight\Engine;
 
 $corsAllowedOrigin = getenv('CORS_ALLOWED_ORIGIN') ?: 'http://localhost:5173';
@@ -52,6 +53,7 @@ $app->route('GET /api/health', function () use ($app) {
 });
 
 (new ConfigurationController($app))->register();
+(new StorageAttributeController($app))->register();
 
 $app->route('POST /api/item-families', new CreateItemFamilyController($app));
 

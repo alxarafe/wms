@@ -2,21 +2,23 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
-PHP_DIR="$ROOT_DIR/php"
+compose=(docker compose -f "$ROOT_DIR/docker-compose.yml")
 
 echo "🔧 Bootstrapping PHP tooling..."
 
-cd "$PHP_DIR"
-
-if [ ! -f composer.json ]; then
-  echo "❌ composer.json not found in php/"
+if ! "${compose[@]}" ps --services --filter status=running | grep -qx "php-app"; then
+  echo "❌ PHP container is not running. Start it with ./bin/start.sh"
   exit 1
 fi
 
+run_php() {
+  "${compose[@]}" exec -T php-app "$@"
+}
+
 # Install dependencies if needed
-if [ ! -d vendor ] || [ ! -f vendor/autoload.php ]; then
+if ! run_php test -f vendor/autoload.php; then
   echo "📦 Installing dependencies..."
-  composer install --no-interaction --prefer-dist
+  run_php composer install --no-interaction --prefer-dist
 fi
 
 # Verify required tools
@@ -30,7 +32,7 @@ TOOLS=(
 MISSING=0
 
 for t in "${TOOLS[@]}"; do
-  if [ ! -f "$t" ]; then
+  if ! run_php test -f "$t"; then
     echo "⚠ Missing tool: $t"
     MISSING=1
   fi
@@ -38,7 +40,7 @@ done
 
 if [ "$MISSING" -eq 1 ]; then
   echo "📦 Reinstalling dev dependencies..."
-  composer install --no-interaction --prefer-dist
+  run_php composer install --no-interaction --prefer-dist
 fi
 
 echo "✔ PHP tooling ready"

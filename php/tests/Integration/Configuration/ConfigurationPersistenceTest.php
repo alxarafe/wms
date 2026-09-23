@@ -32,6 +32,7 @@ final class ConfigurationPersistenceTest extends TestCase
         self::assertInstanceOf(\PDOStatement::class, $database);
         self::assertContains($database->fetchColumn(), [
             'wms_php_configuration_a_test', 'wms_php_configuration_b_test',
+            'wms_php_catalogue_a_test', 'wms_php_catalogue_b_test',
         ]);
         $repository = new PdoConfigurationRepository($pdo);
         $service = new ConfigureWarehouse($repository);

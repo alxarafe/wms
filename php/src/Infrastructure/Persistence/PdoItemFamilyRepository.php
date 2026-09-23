@@ -8,7 +8,10 @@ use Alxarafe\App\Application\Catalogue\ItemFamilyRepository;
 use Alxarafe\App\Domain\Catalogue\Entity\ItemFamily;
 use Alxarafe\App\Domain\Catalogue\ValueObject\ItemFamilyCode;
 use Alxarafe\App\Domain\Catalogue\ValueObject\ItemFamilyId;
-use Alxarafe\App\Domain\Rules\ValueObject\AttributeCode;
+use Alxarafe\App\Domain\Catalogue\ValueObject\StorageAttributeId;
+use Alxarafe\App\Application\Catalogue\StorageAttributeNotFound;
+use Alxarafe\App\Application\Catalogue\ItemFamilyConflict;
+use PDOException;
 use Alxarafe\App\Infrastructure\Config\Database;
 use PDO;
 use PDOStatement;
@@ -54,12 +57,12 @@ final readonly class PdoItemFamilyRepository implements ItemFamilyRepository
     private function hydrate(array $row): ItemFamily
     {
         $codes = array_map(
-            static fn (string $value): AttributeCode => new AttributeCode($value),
+            static fn (string $value): StorageAttributeId => new StorageAttributeId($value),
             array_values($this->statement(
                 sprintf(
-                    'SELECT sa.code FROM %s sa '
+                    'SELECT sa.id FROM %s sa '
                     . 'JOIN %s fsa ON fsa.attribute_id = sa.id '
-                    . 'WHERE fsa.family_id = :id ORDER BY sa.code',
+                    . 'WHERE fsa.family_id = :id ORDER BY sa.id',
                     Database::qualified(self::STORAGE_ATTRIBUTE),
                     Database::qualified(self::FAMILY_STORAGE_ATTRIBUTE),
                 ),
@@ -80,18 +83,18 @@ final readonly class PdoItemFamilyRepository implements ItemFamilyRepository
         return $statement;
     }
 
-    public function availableFamilyAttributes(array $codes): array
+    public function existingAttributeIds(array $codes): array
     {
         if ($codes === []) {
             return [];
         }
         $placeholders = implode(', ', array_fill(0, count($codes), '?'));
         $statement = $this->pdo->prepare(sprintf(
-            'SELECT code FROM %s WHERE code IN (%s)',
+            'SELECT id FROM %s WHERE id IN (%s) ORDER BY id' . ($this->pdo->inTransaction() ? ' FOR KEY SHARE' : ''),
             Database::qualified(self::STORAGE_ATTRIBUTE),
             $placeholders,
         ));
-        $statement->execute(array_map(static fn (AttributeCode $code): string => $code->value(), $codes));
+        $statement->execute(array_map(static fn (StorageAttributeId $code): string => $code->value(), $codes));
         return array_values($statement->fetchAll(PDO::FETCH_COLUMN));
     }
 
@@ -99,16 +102,18 @@ final readonly class PdoItemFamilyRepository implements ItemFamilyRepository
     {
         $this->pdo->beginTransaction();
         try {
+            $ids = array_map(static fn (StorageAttributeId $id): string => $id->value(), $family->attributes());
+            if (array_diff($ids, $this->existingAttributeIds($family->attributes())) !== []) {
+                throw new StorageAttributeNotFound('Storage attribute not found.');
+            }
             $statement = $this->pdo->prepare(sprintf(
                 'INSERT INTO %s (id, code, name) VALUES (?, ?, ?)',
                 Database::qualified(self::ITEM_FAMILY),
             ));
             $statement->execute([$family->id()->value(), $family->code()->value(), $family->name()]);
             $link = $this->pdo->prepare(sprintf(
-                'INSERT INTO %s (family_id, attribute_id) '
-                . 'SELECT ?, id FROM %s WHERE code = ?',
+                'INSERT INTO %s (family_id, attribute_id) VALUES (?, ?)',
                 Database::qualified(self::FAMILY_STORAGE_ATTRIBUTE),
-                Database::qualified(self::STORAGE_ATTRIBUTE),
             ));
             foreach ($family->attributes() as $attribute) {
                 $link->execute([$family->id()->value(), $attribute->value()]);
@@ -116,6 +121,12 @@ final readonly class PdoItemFamilyRepository implements ItemFamilyRepository
             $this->pdo->commit();
         } catch (Throwable $error) {
             $this->pdo->rollBack();
+            if ($error instanceof PDOException && $error->getCode() === '23505') {
+                throw new ItemFamilyConflict('Item family code already exists.', 0, $error);
+            }
+            if ($error instanceof PDOException && $error->getCode() === '23503') {
+                throw new StorageAttributeNotFound('Storage attribute not found.', 0, $error);
+            }
             throw $error;
         }
     }

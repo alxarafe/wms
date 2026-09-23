@@ -222,29 +222,41 @@ No borrar cambios ajenos ni ejecutar operaciones destructivas para limpiar el en
 
 ## 10. Comandos y pruebas
 
-Los scripts siguientes se ejecutan desde la raíz del repositorio, en el **anfitrión**. Los scripts de tests utilizan Docker para ejecutar comandos en los contenedores; requieren que estos estén arrancados.
+Los scripts siguientes se ejecutan desde la raíz del repositorio, en el **anfitrión**. Docker es el entorno obligatorio para PHP en desarrollo y pruebas: no ejecutar `php`, Composer, PHPUnit, PHPCS, PHPStan ni Deptrac directamente con herramientas instaladas en el anfitrión. Los scripts PHP delegan en el servicio `php-app`.
 
 ```bash
+# Arrancar o reconstruir los servicios necesarios.
 ./bin/start.sh
+
+# Pruebas PHP: PHPUnit se ejecuta dentro de php-app.
 ./bin/php_test.sh
+
+# Preparar dependencias y comprobar las herramientas PHP dentro de php-app.
+./bin/bootstrap_php.sh
+
+# Herramientas PHP, si se necesitan de forma individual.
+docker compose exec -T php-app composer install --no-interaction
+docker compose exec -T php-app vendor/bin/phpcs
+docker compose exec -T php-app vendor/bin/phpstan analyse
+docker compose exec -T php-app vendor/bin/deptrac analyse
+
+# Otras comprobaciones del proyecto.
 ./bin/java_test.sh
 ./bin/ci_local.sh
 ./bin/migrate.sh
 ./bin/docker_stop.sh
 ```
 
-Revisar cada script antes de ejecutarlo si puede modificar o eliminar datos. Aplicar migraciones únicamente al entorno de desarrollo o pruebas pertinente al encargo.
+`php-app` debe estar arrancado antes de usar `./bin/php_test.sh`, `./bin/bootstrap_php.sh` o los comandos `docker compose exec`. Si aparece `PHP container is not running`, ejecutar `./bin/start.sh`. Puede comprobarse el estado con `docker compose ps`. Los comandos `docker compose exec` deben ejecutarse desde la raíz del repositorio para usar el Compose correcto.
 
-Alternativas sin Docker, desde el directorio correspondiente y con dependencias instaladas:
+La excepción es el entorno de CI: los workflows pueden instalar y ejecutar PHP directamente dentro de su propio runner o contenedor; esa configuración no cambia el flujo local documentado aquí.
+
+Revisar cada script antes de ejecutarlo si puede modificar o eliminar datos. Aplicar migraciones únicamente al entorno de desarrollo o pruebas pertinente al encargo. No se mantienen instrucciones de ejecución PHP sin Docker en este repositorio.
+
+Para Java, si las dependencias están disponibles localmente o en su contenedor, la comprobación equivalente es:
 
 ```bash
-# Desde php/
-vendor/bin/phpunit
-vendor/bin/phpcs
-vendor/bin/phpstan analyse
-vendor/bin/deptrac analyse
-
-# Desde java/
+# Desde java/ cuando se trabaje directamente con el entorno Java autorizado.
 mvn test
 ```
 

@@ -6,7 +6,7 @@ namespace Alxarafe\App\Infrastructure\Http;
 
 use Alxarafe\App\Application\Catalogue\ListItemFamilies;
 use Alxarafe\App\Domain\Catalogue\Entity\ItemFamily;
-use Alxarafe\App\Domain\Rules\ValueObject\AttributeCode;
+use Alxarafe\App\Domain\Catalogue\ValueObject\StorageAttributeId;
 use Alxarafe\App\Infrastructure\Config\Database;
 use Alxarafe\App\Infrastructure\Persistence\PdoItemFamilyRepository;
 use flight\Engine;
@@ -27,7 +27,7 @@ final readonly class GetItemFamiliesController
                 'code' => $family->code()->value(),
                 'name' => $family->name(),
                 'attributes' => array_map(
-                    static fn (AttributeCode $attribute): string => $attribute->value(),
+                    static fn (StorageAttributeId $attribute): string => $attribute->value(),
                     $family->attributes(),
                 ),
             ],

@@ -80,7 +80,7 @@ Both layers represent the same system from different abstraction levels and must
 The first configuration delivery creates warehouses, HU types, warehouse location
 types and their policies through HTTP. Run `./bin/php_configuration_test.sh` on the
 host to recreate two dedicated PHP test databases and run migrations, PHPUnit and
-Bruno. Run the v2 migration line with `php bin/migrate.php` from `php/`; it excludes
+Bruno. Run the v2 migration line with `./bin/migrate.sh`; it excludes
 seeds and the legacy operational schema. Java synchronization is deferred.
 See the [PHP configuration contract](docs/architecture/php-configuration-api.md)
 for prerequisites and the temporary aisle fixture used to test format locking.
@@ -101,13 +101,21 @@ for prerequisites and the temporary aisle fixture used to test format locking.
 ./bin/ci_local.sh     # PHP tests + Java tests
 ```
 
-### Direct commands (without Docker)
+### Comandos PHP dentro del contenedor
 
 ```bash
-cd php && composer install && vendor/bin/phpunit
-cd php && vendor/bin/phpcs && vendor/bin/phpstan analyse && vendor/bin/deptrac analyse
+docker compose exec php-app composer install --no-interaction
+docker compose exec php-app vendor/bin/phpunit
+docker compose exec php-app vendor/bin/phpcs
+docker compose exec php-app vendor/bin/phpstan analyse
+docker compose exec php-app vendor/bin/deptrac analyse
 cd java && mvn test
 ```
+
+Las pruebas y herramientas PHP deben ejecutarse con el PHP de `php-app`, no con
+el binario PHP instalado en el anfitrión. `./bin/php_test.sh` y
+`./bin/ci_local.sh` ya aplican esta regla; el contenedor debe estar arrancado
+con `./bin/start.sh`.
 
 ### Apply database migrations
 

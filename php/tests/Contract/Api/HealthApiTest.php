@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Contract\Api;
 
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\Group;
 
 final class HealthApiTest extends TestCase
 {
@@ -23,6 +24,7 @@ final class HealthApiTest extends TestCase
         self::assertArrayHasKey('timestamp', $data);
     }
 
+    #[Group('java')]
     public function testJavaHealthEndpoint(): void
     {
         $base = getenv('JAVA_BASE_URL') ?: self::JAVA_BASE;
@@ -35,13 +37,21 @@ final class HealthApiTest extends TestCase
         self::assertArrayHasKey('timestamp', $data);
     }
 
-    public function testGreetingEndpointsAreGoneInBothStacks(): void
+    public function testPhpGreetingEndpointsAreGone(): void
     {
-        foreach ([getenv('PHP_BASE_URL') ?: self::PHP_BASE, getenv('JAVA_BASE_URL') ?: self::JAVA_BASE] as $base) {
-            $this->skipIfUnreachable($base);
-            $this->get($base . '/api/greet', 404);
-            $this->get($base . '/api/greetings', 404);
-        }
+        $base = getenv('PHP_BASE_URL') ?: self::PHP_BASE;
+        $this->skipIfUnreachable($base);
+        $this->get($base . '/api/greet', 404);
+        $this->get($base . '/api/greetings', 404);
+    }
+
+    #[Group('java')]
+    public function testJavaGreetingEndpointsAreGone(): void
+    {
+        $base = getenv('JAVA_BASE_URL') ?: self::JAVA_BASE;
+        $this->skipIfUnreachable($base);
+        $this->get($base . '/api/greet', 404);
+        $this->get($base . '/api/greetings', 404);
     }
 
     public function testPhpApiAllowsViteOrigin(): void
@@ -69,6 +79,7 @@ final class HealthApiTest extends TestCase
         self::assertStringContainsString('POST', $headers['access-control-allow-methods'] ?? '');
     }
 
+    #[Group('java')]
     public function testJavaApiAllowsViteOrigin(): void
     {
         $base = getenv('JAVA_BASE_URL') ?: self::JAVA_BASE;
@@ -77,6 +88,7 @@ final class HealthApiTest extends TestCase
         self::assertSame('http://localhost:5173', $headers['access-control-allow-origin'] ?? null);
     }
 
+    #[Group('java')]
     public function testJavaApiAnswersCorsPreflight(): void
     {
         $base = getenv('JAVA_BASE_URL') ?: self::JAVA_BASE;

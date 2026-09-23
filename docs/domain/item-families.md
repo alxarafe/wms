@@ -1,28 +1,24 @@
 # Familias de artículo iniciales
 
-## Requisito confirmado
+## Estado implementado
 
-Se crean estas cinco familias y se vinculan con los atributos de tipo `FAMILY` indicados:
+Las familias se relacionan con atributos del catálogo
+wms_review_v2.storage_attribute mediante family_storage_attribute. La API
+recibe UUID de atributos en attributes y no crea atributos implícitamente.
 
-| Código | Nombre | Atributos |
-| --- | --- | --- |
-| `REFRIGERATED_FOOD` | Alimentos refrigerados | `IS_FOOD`, `IS_REFRIGERATED` |
-| `FROZEN_FOOD` | Alimentos congelados | `IS_FOOD`, `IS_FROZEN` |
-| `DRY_FOOD` | Alimentos secos | `IS_FOOD` |
-| `CHEMICAL` | Productos químicos | `IS_CHEMICAL` |
-| `NEUTRAL` | Productos neutros | Ninguno |
+Los códigos históricos IS_FOOD, IS_REFRIGERATED, IS_FROZEN e IS_CHEMICAL no
+forman parte del contrato vigente. La migración 007 los transforma,
+respectivamente, en FOOD, CHILLED, FROZEN y CHEMICAL, conservando UUID y
+vínculos. El catálogo actual usa esos códigos neutrales.
 
-Los atributos de familia se guardan como vínculos en `family_storage_attribute` hacia el
-catálogo `storage_attribute` (esquema `wms_review_v2`). Los códigos de atributo deben
-existir en ese catálogo para poder asignarse a una familia; un atributo desconocido
-devuelve `400` con `{"error":"Unknown FAMILY attribute: <CODE>"}`.
+Un atributo desconocido o que no sea un UUID válido se rechaza con 422.
 
-Estas familias son datos de prueba creados mediante la API. Este documento no define
-reglas adicionales de compatibilidad o movimiento de stock.
+## Límites y evolución
 
-**Estado de los atributos en la implementación vigente**: el catálogo `storage_attribute`
-se siembra con semillas (`005`) solo en entornos de desarrollo. En las bases de prueba
-Bruno (montadas con la migración 004, sin semillas) el catálogo está vacío y las familias
-se crean sin atributos (`attributes: []`). La asignación de atributos recuperará su
-cobertura cuando exista un mecanismo para poblar `storage_attribute` sobre una base v2
-limpia; los códigos `IS_*` de la tabla son el objetivo previsto para esas altas.
+La implementación permite varios atributos por familia y un grupo opcional en
+cada atributo. El grupo todavía no aplica reglas de exclusividad al crear
+familias ni al mover stock.
+
+No se implementan bajas, edición, herencia de atributos ni validación de
+compatibilidad. Son extensiones aplazadas que pueden reutilizar los UUID y la
+tabla de vínculos actuales.

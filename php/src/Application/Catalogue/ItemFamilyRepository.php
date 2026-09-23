@@ -6,7 +6,7 @@ namespace Alxarafe\App\Application\Catalogue;
 
 use Alxarafe\App\Domain\Catalogue\Entity\ItemFamily;
 use Alxarafe\App\Domain\Catalogue\ValueObject\ItemFamilyCode;
-use Alxarafe\App\Domain\Rules\ValueObject\AttributeCode;
+use Alxarafe\App\Domain\Catalogue\ValueObject\StorageAttributeId;
 
 interface ItemFamilyRepository
 {
@@ -15,10 +15,11 @@ interface ItemFamilyRepository
     /** @return list<ItemFamily> */
     public function findAll(): array;
 
-    /** @param list<AttributeCode> $codes
+    /** @param list<StorageAttributeId> $ids
      *  @return list<string>
      */
-    public function availableFamilyAttributes(array $codes): array;
+    public function existingAttributeIds(array $ids): array;
 
+    /** Guarda familia y vínculos atómicamente; revalida y protege las referencias durante el guardado. */
     public function save(ItemFamily $family): void;
 }

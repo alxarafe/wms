@@ -8,4 +8,5 @@ declare(strict_types=1);
 return [
     '004_review_v2_schema' => __DIR__ . '/../../database/migrations/004_create_wms_review_v2_schema.sql',
     '006_php_configuration_guards' => __DIR__ . '/migrations/006_configuration_guards.sql',
+    '007_php_storage_attribute_catalogue' => __DIR__ . '/migrations/007_storage_attribute_catalogue.sql',
 ];

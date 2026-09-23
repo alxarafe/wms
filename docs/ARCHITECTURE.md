@@ -99,7 +99,7 @@ Configuración en `php/deptrac.yaml`:
 - `Application` -> puede depender de `Domain`
 - `Infrastructure` -> puede depender de `Domain` y `Application`
 
-Ejecutar: `vendor/bin/deptrac analyse`
+Ejecutar dentro del contenedor PHP: `docker compose exec php-app vendor/bin/deptrac analyse`
 
 ### Java (ArchUnit)
 

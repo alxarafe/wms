@@ -20,14 +20,14 @@ body:json {
     "code": "INVALID_FAMILY",
     "name": "Atributo no existente en el catálogo",
     "attributes": [
-      "COLD"
+      "not-a-uuid"
     ]
   }
 }
 
 tests {
   test("rechaza un atributo que no existe en el catálogo", function () {
-    expect(res.getStatus()).to.equal(400);
-    expect(res.getBody().error).to.equal("Unknown FAMILY attribute: COLD");
+    expect(res.getStatus()).to.equal(422);
+    expect(res.getBody().error).to.include("valid UUID");
   });
 }
