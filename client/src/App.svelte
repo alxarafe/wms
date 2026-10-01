@@ -85,17 +85,12 @@
     }
   }
 
-  function changeApiMode(mode: 'mock' | 'php' | 'java'): void {
+  function changeApiMode(mode: 'php' | 'java'): void {
     if (mode === apiMode) {
       return;
     }
     setApiMode(mode);
-    show(
-      mode === 'mock'
-        ? 'Modo simulado: el estado y las operaciones se atienden localmente.'
-        : `Conectando a la API ${mode.toUpperCase()} (${mode === 'php' ? ':28080' : ':38080'}).`, 
-      'info',
-    );
+    show(`Conectando a la API ${mode.toUpperCase()} (${mode === 'php' ? ':28080' : ':38080'}).`, 'info');
     void reload();
   }
 
@@ -118,6 +113,12 @@
 
   function onSelectLocation(location: LocationState): void {
     selectedLocationId = location.id;
+    const aisle = (warehouse?.zones ?? [])
+      .flatMap((zone) => zone.aisles)
+      .find((a) => a.locations.some((l) => l.id === location.id));
+    if (aisle) {
+      selectedAisleCode = aisle.code;
+    }
   }
 
   onMount(() => {
@@ -134,9 +135,6 @@
       </p>
     </div>
     <div class="modes">
-      <button class={apiMode === 'mock' ? 'active' : ''} onclick={() => changeApiMode('mock')}>
-        Simulado
-      </button>
       <button class={apiMode === 'php' ? 'active' : ''} onclick={() => changeApiMode('php')}>
         PHP
       </button>

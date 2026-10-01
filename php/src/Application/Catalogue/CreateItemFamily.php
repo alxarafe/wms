@@ -16,15 +16,19 @@ final readonly class CreateItemFamily
     }
 
     /** @param list<string> $attributeCodes */
-    public function execute(string $code, string $name, array $attributeCodes): ItemFamily
+    public function execute(string $code, string $name, array $attributeCodes, ?string $parentFamilyId = null): ItemFamily
     {
         $attributes = array_map(static fn (string $value): StorageAttributeCode => new StorageAttributeCode($value), $attributeCodes);
-        $family = new ItemFamily(ItemFamilyId::generate(), new ItemFamilyCode($code), $name, $attributes);
+        $parentId = $parentFamilyId !== null ? new ItemFamilyId($parentFamilyId) : null;
+        $family = new ItemFamily(ItemFamilyId::generate(), new ItemFamilyCode($code), $name, $parentId, $attributes);
         $available = $this->repository->existingAttributeCodes($attributes);
         foreach ($attributes as $attribute) {
             if (!in_array($attribute->value(), $available, true)) {
                 throw new StorageAttributeNotFound('Storage attribute not found: ' . $attribute->value());
             }
+        }
+        if ($parentId !== null && $this->repository->findById($parentId) === null) {
+            throw new StorageAttributeNotFound('Parent item family not found: ' . $parentId->value());
         }
 
         if ($this->repository->findByCode($family->code()) !== null) {

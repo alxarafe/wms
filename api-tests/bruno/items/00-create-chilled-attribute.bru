@@ -1,0 +1,34 @@
+meta {
+  name: crear atributo CHILLED
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{base_url}}/api/storage-attributes
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  Accept: application/json
+}
+
+body:json {
+  {
+    "code": "CHILLED",
+    "name": "Refrigerado",
+    "exclusive_group_code": "THERMAL"
+  }
+}
+
+tests {
+  test("crea el atributo CHILLED", function () {
+    expect(res.getStatus()).to.equal(201);
+    expect(res.getBody().id).to.match(/^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i);
+    expect(res.getBody().code).to.equal("CHILLED");
+    expect(res.getBody().name).to.equal("Refrigerado");
+    expect(res.getBody().exclusive_group_code).to.equal("THERMAL");
+  });
+}

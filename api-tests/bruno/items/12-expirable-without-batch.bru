@@ -1,0 +1,34 @@
+meta {
+  name: caducable sin lote
+  type: http
+  seq: 12
+}
+
+post {
+  url: {{base_url}}/api/items
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  Accept: application/json
+}
+
+body:json {
+  {
+    "sku": "CADUCABLE-SIN-LOTE",
+    "name": "Artículo caducable sin lote",
+    "familyCode": "CHILLED_FOOD",
+    "baseUomCode": "BOX",
+    "isBatchManaged": false,
+    "isExpirable": true
+  }
+}
+
+tests {
+  test("rechaza caducidad sin gestión por lote", function () {
+    expect(res.getStatus()).to.equal(400);
+    expect(res.getBody().error).to.equal("An expirable item must also be batch-managed.");
+  });
+}

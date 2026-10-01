@@ -22,6 +22,7 @@ final class ItemFamilyTest extends TestCase
         self::assertTrue($id->equals($family->id()));
         self::assertTrue($code->equals($family->code()));
         self::assertSame('Consumer Electronics', $family->name());
+        self::assertNull($family->parentFamilyId());
     }
 
     public function testEmptyName(): void
@@ -37,7 +38,7 @@ final class ItemFamilyTest extends TestCase
     public function testDuplicateAttributeCodes(): void
     {
         $this->expectException(InvalidArgumentException::class);
-        new ItemFamily(ItemFamilyId::generate(), new ItemFamilyCode('FOOD'), 'Food', [
+        new ItemFamily(ItemFamilyId::generate(), new ItemFamilyCode('FOOD'), 'Food', null, [
             new StorageAttributeCode('FOOD'),
             new StorageAttributeCode('FOOD'),
         ]);

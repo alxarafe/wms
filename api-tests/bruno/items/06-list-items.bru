@@ -1,7 +1,7 @@
 meta {
   name: listar artículos
   type: http
-  seq: 6
+  seq: 8
 }
 
 get {
@@ -24,7 +24,7 @@ tests {
       id: body[0].id,
       sku: "BOLSA50",
       name: "Bolsa de 50 kg",
-      familyCode: "FOOD",
+      familyCode: "CHILLED_FOOD",
       baseUomCode: "BOX",
       isBatchManaged: true,
       isExpirable: true
@@ -33,7 +33,7 @@ tests {
       id: body[1].id,
       sku: "CAJA24",
       name: "Caja de 24 latas",
-      familyCode: "FOOD",
+      familyCode: "CHILLED_FOOD",
       baseUomCode: "PAL",
       isBatchManaged: false,
       isExpirable: false

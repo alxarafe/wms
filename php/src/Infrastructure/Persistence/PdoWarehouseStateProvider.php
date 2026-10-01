@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Alxarafe\App\Infrastructure\Persistence;
 
 use Alxarafe\App\Application\State\WarehouseStateProvider;
+use Alxarafe\App\Infrastructure\Config\Database;
 use PDO;
 
 /**
@@ -19,7 +20,7 @@ final readonly class PdoWarehouseStateProvider implements WarehouseStateProvider
     /** @return WarehouseStateView|null */
     public function stateFor(string $warehouseId): ?array
     {
-        $statement = $this->pdo->prepare('SELECT id, code, name FROM warehouse WHERE id = ?');
+        $statement = $this->pdo->prepare('SELECT id, code, name FROM ' . Database::qualified('warehouse') . ' WHERE id = ?');
         $statement->execute([$warehouseId]);
         $warehouse = $statement->fetch(PDO::FETCH_ASSOC);
         if (!is_array($warehouse)) {
@@ -64,8 +65,17 @@ final readonly class PdoWarehouseStateProvider implements WarehouseStateProvider
      */
     private function fetchLocations(string $warehouseId): array
     {
+        $loc = Database::qualified('location');
+        $aisle = Database::qualified('aisle');
+        $zone = Database::qualified('zone');
+        $zoneType = Database::qualified('zone_type');
+        $hu = Database::qualified('handling_unit');
+        $sq = Database::qualified('stock_quant');
+        $item = Database::qualified('item');
+        $batch = Database::qualified('batch');
+
         $statement = $this->pdo->prepare(
-            'SELECT
+            "SELECT
                 l.id AS location_id, l.code AS location_code, l.bay, l.level, l.role, l.status,
                 a.id AS aisle_id, a.code AS aisle_code, a.is_blocked AS aisle_blocked,
                 z.id AS zone_id, z.code AS zone_code,
@@ -74,16 +84,16 @@ final readonly class PdoWarehouseStateProvider implements WarehouseStateProvider
                 i.id AS item_id, i.sku AS item_code, i.name AS name,
                 sq.quantity, sq.unit,
                 b.batch_code
-            FROM location l
-            JOIN aisle a ON a.id = l.aisle_id
-            JOIN zone z ON z.id = a.zone_id
-            JOIN zone_type zt ON zt.id = z.zone_type_id
-            LEFT JOIN handling_unit hu ON hu.location_id = l.id AND hu.parent_hu_id IS NULL
-            LEFT JOIN stock_quant sq ON sq.hu_id = hu.id
-            LEFT JOIN item i ON i.id = sq.item_id
-            LEFT JOIN batch b ON b.id = sq.batch_id
+            FROM $loc l
+            JOIN $aisle a ON a.id = l.aisle_id
+            JOIN $zone z ON z.id = a.zone_id
+            JOIN $zoneType zt ON zt.id = z.zone_type_id
+            LEFT JOIN $hu hu ON hu.location_id = l.id AND hu.parent_hu_id IS NULL
+            LEFT JOIN $sq sq ON sq.hu_id = hu.id
+            LEFT JOIN $item i ON i.id = sq.item_id
+            LEFT JOIN $batch b ON b.id = sq.batch_id
             WHERE z.warehouse_id = ?
-            ORDER BY a.id, l.level DESC, l.bay'
+            ORDER BY a.id, l.level DESC, l.bay"
         );
         $statement->execute([$warehouseId]);
 

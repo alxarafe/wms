@@ -93,9 +93,11 @@ CREATE TABLE IF NOT EXISTS aisle_definition (
 -- ── Catálogo logístico ───────────────────────────────────────
 
 CREATE TABLE IF NOT EXISTS item_family (
-    id   VARCHAR(36) PRIMARY KEY,
-    code VARCHAR(20) NOT NULL UNIQUE CHECK (code <> ''),
-    name VARCHAR(255) NOT NULL CHECK (name <> '')
+    id                VARCHAR(36) PRIMARY KEY,
+    parent_family_id  VARCHAR(36) REFERENCES item_family (id),
+    code              VARCHAR(20) NOT NULL UNIQUE CHECK (code <> ''),
+    name              VARCHAR(255) NOT NULL CHECK (name <> ''),
+    CHECK (parent_family_id IS NULL OR parent_family_id <> id)
 );
 
 CREATE TABLE IF NOT EXISTS uom (

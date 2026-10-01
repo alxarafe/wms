@@ -21,11 +21,19 @@ use Throwable;
 final readonly class PdoItemFamilyRepository implements ItemFamilyRepository
 {
     private const ITEM_FAMILY = 'item_family';
-    private const STORAGE_ATTRIBUTE = 'storage_attribute';
-    private const FAMILY_STORAGE_ATTRIBUTE = 'family_storage_attribute';
 
     public function __construct(private PDO $pdo)
     {
+    }
+
+    private function attributeTable(): string
+    {
+        return Database::catalogSchema() === 'public' ? 'attribute' : 'storage_attribute';
+    }
+
+    private function familyAttributeTable(): string
+    {
+        return Database::catalogSchema() === 'public' ? 'item_family_attribute' : 'family_storage_attribute';
     }
 
     public function findByCode(ItemFamilyCode $code): ?ItemFamily
@@ -44,6 +52,15 @@ final readonly class PdoItemFamilyRepository implements ItemFamilyRepository
         return array_values(array_map(fn (array $row): ItemFamily => $this->hydrate($row), $rows));
     }
 
+    public function findById(ItemFamilyId $id): ?ItemFamily
+    {
+        $row = $this->fetch(
+            sprintf('SELECT id, code, name FROM %s WHERE id = :id', Database::qualified(self::ITEM_FAMILY)),
+            ['id' => $id->value()],
+        );
+        return $row === null ? null : $this->hydrate($row);
+    }
+
     /** @param array<string, scalar> $params
      *  @return array<string, string>|null
      */
@@ -56,20 +73,24 @@ final readonly class PdoItemFamilyRepository implements ItemFamilyRepository
     /** @param array<string, string> $row */
     private function hydrate(array $row): ItemFamily
     {
+        $attrTable = $this->attributeTable();
+        $linkTable = $this->familyAttributeTable();
+        $linkColumn = $linkTable === 'item_family_attribute' ? 'item_family_id' : 'family_id';
         $codes = array_map(
             static fn (string $value): StorageAttributeCode => new StorageAttributeCode($value),
             array_values($this->statement(
                 sprintf(
-                    'SELECT sa.code FROM %s sa '
-                    . 'JOIN %s fsa ON fsa.attribute_id = sa.id '
-                    . 'WHERE fsa.family_id = :id ORDER BY sa.code',
-                    Database::qualified(self::STORAGE_ATTRIBUTE),
-                    Database::qualified(self::FAMILY_STORAGE_ATTRIBUTE),
+                    'SELECT a.code FROM %s a '
+                    . 'JOIN %s ifa ON ifa.attribute_id = a.id '
+                    . 'WHERE ifa.%s = :id ORDER BY a.code',
+                    Database::qualified($attrTable),
+                    Database::qualified($linkTable),
+                    $linkColumn,
                 ),
                 ['id' => $row['id']],
             )->fetchAll(PDO::FETCH_COLUMN)),
         );
-        return new ItemFamily(new ItemFamilyId($row['id']), new ItemFamilyCode($row['code']), $row['name'], $codes);
+        return new ItemFamily(new ItemFamilyId($row['id']), new ItemFamilyCode($row['code']), $row['name'], null, $codes);
     }
 
     /** @param array<string, scalar> $params */
@@ -88,10 +109,11 @@ final readonly class PdoItemFamilyRepository implements ItemFamilyRepository
         if ($codes === []) {
             return [];
         }
+        $attrTable = $this->attributeTable();
         $placeholders = implode(', ', array_fill(0, count($codes), '?'));
         $statement = $this->pdo->prepare(sprintf(
             'SELECT code FROM %s WHERE code IN (%s) ORDER BY code' . ($this->pdo->inTransaction() ? ' FOR KEY SHARE' : ''),
-            Database::qualified(self::STORAGE_ATTRIBUTE),
+            Database::qualified($attrTable),
             $placeholders,
         ));
         $statement->execute(array_map(static fn (StorageAttributeCode $code): string => $code->value(), $codes));
@@ -100,6 +122,8 @@ final readonly class PdoItemFamilyRepository implements ItemFamilyRepository
 
     public function save(ItemFamily $family): void
     {
+        $attrTable = $this->attributeTable();
+        $linkTable = $this->familyAttributeTable();
         $this->pdo->beginTransaction();
         try {
             $codes = $family->attributes();
@@ -108,7 +132,7 @@ final readonly class PdoItemFamilyRepository implements ItemFamilyRepository
                 $placeholders = implode(', ', array_fill(0, count($codes), '?'));
                 $attributeStatement = $this->pdo->prepare(sprintf(
                     'SELECT id, code FROM %s WHERE code IN (%s) ORDER BY code FOR KEY SHARE',
-                    Database::qualified(self::STORAGE_ATTRIBUTE),
+                    Database::qualified($attrTable),
                     $placeholders,
                 ));
                 $attributeStatement->execute(array_map(static fn (StorageAttributeCode $code): string => $code->value(), $codes));
@@ -126,7 +150,7 @@ final readonly class PdoItemFamilyRepository implements ItemFamilyRepository
             $statement->execute([$family->id()->value(), $family->code()->value(), $family->name()]);
             $link = $this->pdo->prepare(sprintf(
                 'INSERT INTO %s (family_id, attribute_id) VALUES (?, ?)',
-                Database::qualified(self::FAMILY_STORAGE_ATTRIBUTE),
+                Database::qualified($linkTable),
             ));
             foreach ($family->attributes() as $attribute) {
                 $link->execute([$family->id()->value(), $attributeIdsByCode[$attribute->value()]]);

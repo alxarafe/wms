@@ -8,6 +8,7 @@ use Alxarafe\App\Application\Catalogue\CreateItem;
 use Alxarafe\App\Application\Catalogue\ItemConflict;
 use Alxarafe\App\Application\Catalogue\ItemFamilyRepository;
 use Alxarafe\App\Application\Catalogue\ItemRepository;
+use Alxarafe\App\Application\Catalogue\StorageAttributeNotFound;
 use Alxarafe\App\Application\Catalogue\UomRepository;
 use Alxarafe\App\Domain\Catalogue\Entity\Item;
 use Alxarafe\App\Infrastructure\Config\Database;
@@ -74,6 +75,8 @@ final readonly class CreateItemController
         } catch (JsonException) {
             $this->app->json(['error' => 'Invalid JSON body.'], 400);
         } catch (InvalidArgumentException $error) {
+            $this->app->json(['error' => $error->getMessage()], 400);
+        } catch (StorageAttributeNotFound $error) {
             $this->app->json(['error' => $error->getMessage()], 400);
         } catch (ItemConflict $error) {
             $this->app->json(['error' => $error->getMessage()], 409);

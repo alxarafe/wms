@@ -57,4 +57,9 @@ final readonly class CatalogueInput
         }
         return $value;
     }
+
+    public function optionalString(string $key): ?string
+    {
+        return ($this->fields[$key] ?? null) === null ? null : $this->string($key);
+    }
 }

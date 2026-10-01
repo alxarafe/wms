@@ -1,7 +1,7 @@
 meta {
   name: crear CAJA24
   type: http
-  seq: 5
+  seq: 7
 }
 
 post {
@@ -19,7 +19,7 @@ body:json {
   {
     "sku": "CAJA24",
     "name": "Caja de 24 latas",
-    "familyCode": "FOOD",
+    "familyCode": "CHILLED_FOOD",
     "baseUomCode": "PAL",
     "isBatchManaged": false,
     "isExpirable": false
@@ -31,7 +31,7 @@ tests {
     expect(res.getStatus()).to.equal(201);
     expect(res.getBody().sku).to.equal("CAJA24");
     expect(res.getBody().name).to.equal("Caja de 24 latas");
-    expect(res.getBody().familyCode).to.equal("FOOD");
+    expect(res.getBody().familyCode).to.equal("CHILLED_FOOD");
     expect(res.getBody().baseUomCode).to.equal("PAL");
     expect(res.getBody().isBatchManaged).to.equal(false);
     expect(res.getBody().isExpirable).to.equal(false);

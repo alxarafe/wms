@@ -48,7 +48,7 @@ PHP y Java exponen `POST /api/receipts` y `POST /api/issues` con `Content-Type: 
 | `404` | Ubicación inexistente, artículo inexistente o lote inexistente |
 | `409` | Hueco ocupado, hueco no disponible (bloqueado o pasillo bloqueado), caducidad distinta de la almacenada en el lote, artículo distinto del stock, cantidad distinta del total almacenado |
 
-El cuerpo de error usa `{"error": "<motivo>"}`. Los motivos de la API están en inglés (coherencia de contrato con el visor y el cliente); el mock del cliente usa español como referencia de interfaz, sin implicar el contrato HTTP.
+El cuerpo de error usa `{"error": "<motivo>"}`. Los motivos de la API están en inglés, por coherencia con el contrato del visor y el cliente.
 
 ## Decisiones resueltas
 

@@ -19,9 +19,13 @@ final readonly class StorageAttribute
         string $name,
         ?string $exclusiveGroupCode = null,
     ) {
+        // Check for NUL byte BEFORE trimming (trim removes it)
+        if (str_contains($name, "\0")) {
+            throw new InvalidArgumentException('Attribute name must contain 1-255 characters without NUL.');
+        }
         $name = trim($name);
         $length = preg_match_all('/./us', $name);
-        if ($name === '' || str_contains($name, "\0") || $length === false || $length > 255) {
+        if ($name === '' || $length === false || $length > 255) {
             throw new InvalidArgumentException('Attribute name must contain 1-255 characters without NUL.');
         }
         if ($exclusiveGroupCode !== null) {

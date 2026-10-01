@@ -26,6 +26,7 @@ final readonly class GetItemFamiliesController
                 'id' => $family->id()->value(),
                 'code' => $family->code()->value(),
                 'name' => $family->name(),
+                'parent_family_id' => $family->parentFamilyId()?->value(),
                 'attributes' => array_map(
                     static fn (StorageAttributeCode $attribute): string => $attribute->value(),
                     $family->attributes(),

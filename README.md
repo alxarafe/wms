@@ -145,7 +145,7 @@ The `POST /api/item-families` contract is documented in [docs/architecture/item-
 
 ### Demo client
 
-A demo client lives in `client/` (Svelte + Vite). It renders an aisle with its stock, runs receipts/issues and switches between mock, PHP and Java modes; it only consumes the HTTP APIs.
+A demo client lives in `client/` (Svelte + Vite). It renders an aisle with its stock, runs receipts/issues and connects to the PHP API and keeps Java available for its later activation; it only consumes the HTTP APIs.
 
 ```bash
 cd client && npm install && npm run dev   # http://localhost:5173

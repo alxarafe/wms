@@ -13,9 +13,10 @@ services:
     environment:
       POSTGRES_HOST: database
       POSTGRES_PORT: "5432"
-      POSTGRES_DB: database_bruno_php
+      POSTGRES_DB: database_test
       POSTGRES_USER: root
       POSTGRES_PASSWORD: root
+      WMS_REVIEW_V2_SCHEMA: wms_review_v2
 
   java-api-test:
     image: wms-java-app:latest
@@ -28,4 +29,4 @@ services:
     ports:
       - "127.0.0.1:${BRUNO_JAVA_PORT:-28082}:8080"
     environment:
-      POSTGRES_JDBC_URL: jdbc:postgresql://database:5432/database_bruno_java
+      POSTGRES_JDBC_URL: jdbc:postgresql://database:5432/database_test

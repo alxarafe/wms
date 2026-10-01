@@ -1,0 +1,31 @@
+meta {
+  name: FOOD
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{base_url}}/api/storage-attributes
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  Accept: application/json
+}
+
+body:json {
+  {
+    "code": "FOOD",
+    "name": "Alimento"
+  }
+}
+
+tests {
+  test("crea el atributo FOOD", function () {
+    expect(res.getStatus()).to.equal(201);
+    expect(res.getBody().code).to.equal("FOOD");
+    expect(res.getBody().name).to.equal("Alimento");
+  });
+}

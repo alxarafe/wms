@@ -1,7 +1,7 @@
 meta {
   name: crear BOLSA50
   type: http
-  seq: 4
+  seq: 6
 }
 
 post {
@@ -19,7 +19,7 @@ body:json {
   {
     "sku": "BOLSA50",
     "name": "Bolsa de 50 kg",
-    "familyCode": "FOOD",
+    "familyCode": "CHILLED_FOOD",
     "baseUomCode": "BOX",
     "isBatchManaged": true,
     "isExpirable": true
@@ -32,7 +32,7 @@ tests {
     expect(res.getBody().id).to.match(/^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i);
     expect(res.getBody().sku).to.equal("BOLSA50");
     expect(res.getBody().name).to.equal("Bolsa de 50 kg");
-    expect(res.getBody().familyCode).to.equal("FOOD");
+    expect(res.getBody().familyCode).to.equal("CHILLED_FOOD");
     expect(res.getBody().baseUomCode).to.equal("BOX");
     expect(res.getBody().isBatchManaged).to.equal(true);
     expect(res.getBody().isExpirable).to.equal(true);

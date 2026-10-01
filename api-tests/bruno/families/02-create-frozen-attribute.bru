@@ -1,0 +1,32 @@
+meta {
+  name: FROZEN
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{base_url}}/api/storage-attributes
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  Accept: application/json
+}
+
+body:json {
+  {
+    "code": "FROZEN",
+    "name": "Congelado",
+    "exclusive_group_code": "THERMAL"
+  }
+}
+
+tests {
+  test("crea el atributo FROZEN", function () {
+    expect(res.getStatus()).to.equal(201);
+    expect(res.getBody().code).to.equal("FROZEN");
+    expect(res.getBody().name).to.equal("Congelado");
+  });
+}

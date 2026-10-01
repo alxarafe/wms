@@ -49,8 +49,17 @@ final readonly class PdoStockOperationsProvider implements StockOperationsProvid
         if (self::toBool($location['aisle_blocked']) || $location['status'] !== 'ACTIVE') {
             throw new StockOperationException('Location is not available.', 409);
         }
-        if ($this->handlingUnitAt($locationId) !== null) {
-            throw new StockOperationException('Location is already occupied.', 409);
+        $existingHus = $this->handlingUnitsAt($locationId);
+        if ($existingHus !== []) {
+            if (!$location['allows_multi_sku']) {
+                throw new StockOperationException('Location is already occupied.', 409);
+            }
+            // Check compatibility with ALL existing HUs in this location
+            foreach ($existingHus as $hu) {
+                if (!$this->isCompatibleWithExisting($hu['id'], $itemCode)) {
+                    throw new StockOperationException('Item is not compatible with existing stock in this location.', 409);
+                }
+            }
         }
 
         $item = $this->findItemBySku($itemCode);
@@ -85,15 +94,24 @@ final readonly class PdoStockOperationsProvider implements StockOperationsProvid
         if ($location === null) {
             throw new StockOperationException('Location not found.', 404);
         }
-        $hu = $this->handlingUnitAt($locationId);
-        if ($hu === null) {
+        $hus = $this->handlingUnitsAt($locationId);
+        if ($hus === []) {
             throw new StockOperationException('Location has no stock to issue.', 409);
         }
 
-        $quant = $this->findQuant($hu['id'], $itemCode);
-        if ($quant === null) {
+        // Find the HU that contains the requested item
+        $targetHu = null;
+        foreach ($hus as $hu) {
+            $quant = $this->findQuant($hu['id'], $itemCode);
+            if ($quant !== null) {
+                $targetHu = $hu;
+                break;
+            }
+        }
+        if ($targetHu === null) {
             throw new StockOperationException("Item {$itemCode} is not stored in this location.", 409);
         }
+        $quant = $this->findQuant($targetHu['id'], $itemCode);
         $stored = Quantity::fromDecimalString($quant['quantity'], (string) $quant['unit']);
         if ($quantity->unit() !== $stored->unit()) {
             throw new StockOperationException(
@@ -113,8 +131,8 @@ final readonly class PdoStockOperationsProvider implements StockOperationsProvid
         $this->pdo->beginTransaction();
         try {
             $this->deleteQuant($quant['id']);
-            $this->detachHandlingUnit($hu['id']);
-            $this->insertMovement($movementId->value(), 'OUTBOUND', $hu['id'], $locationId, null);
+            $this->detachHandlingUnit($targetHu['id']);
+            $this->insertMovement($movementId->value(), 'OUTBOUND', $targetHu['id'], $locationId, null);
             $this->pdo->commit();
         } catch (Throwable $error) {
             $this->pdo->rollBack();
@@ -206,12 +224,16 @@ final readonly class PdoStockOperationsProvider implements StockOperationsProvid
         throw new StockOperationException('Expiration date must be an ISO-8601 date or datetime.', 400);
     }
 
-    /** @return array{id: string, status: string, aisle_blocked: bool}|null */
+    /** @return array{id: string, status: string, aisle_blocked: bool, allows_multi_sku: bool}|null */
     private function findLocation(string $locationId): ?array
     {
         $statement = $this->pdo->prepare(
-            'SELECT l.id, l.status, a.is_blocked AS aisle_blocked '
-            . 'FROM location l JOIN aisle a ON a.id = l.aisle_id WHERE l.id = ?'
+            'SELECT l.id, l.status, a.is_blocked AS aisle_blocked, zt.allows_multi_sku '
+            . 'FROM location l '
+            . 'JOIN aisle a ON a.id = l.aisle_id '
+            . 'JOIN zone z ON z.id = a.zone_id '
+            . 'JOIN zone_type zt ON zt.id = z.zone_type_id '
+            . 'WHERE l.id = ?'
         );
         $statement->execute([$locationId]);
         $row = $statement->fetch(PDO::FETCH_ASSOC);
@@ -222,21 +244,18 @@ final readonly class PdoStockOperationsProvider implements StockOperationsProvid
             'id' => (string) $row['id'],
             'status' => (string) $row['status'],
             'aisle_blocked' => (bool) $row['aisle_blocked'],
+            'allows_multi_sku' => (bool) $row['allows_multi_sku'],
         ];
     }
 
-    /** @return array{id: string}|null */
-    private function handlingUnitAt(string $locationId): ?array
+    /** @return list<array{id: string}> */
+    private function handlingUnitsAt(string $locationId): array
     {
         $statement = $this->pdo->prepare(
             'SELECT id FROM handling_unit WHERE location_id = ? AND parent_hu_id IS NULL'
         );
         $statement->execute([$locationId]);
-        $row = $statement->fetch(PDO::FETCH_ASSOC);
-        if (!is_array($row)) {
-            return null;
-        }
-        return ['id' => (string) $row['id']];
+        return $statement->fetchAll(PDO::FETCH_ASSOC);
     }
 
     /** @return array{id: string, is_batch_managed: bool}|null */
@@ -390,5 +409,58 @@ final readonly class PdoStockOperationsProvider implements StockOperationsProvid
     private static function toBool(mixed $value): bool
     {
         return $value === true || $value === 't' || $value === '1' || $value === 1;
+    }
+
+    /** Verifica si el item es compatible con el stock existente en la HU. */
+    private function isCompatibleWithExisting(string $huId, string $newItemCode): bool
+    {
+        // Obtener IDs de familias de items ya en la HU
+        $statement = $this->pdo->prepare(
+            'SELECT DISTINCT f.id FROM stock_quant sq '
+            . 'JOIN item i ON i.id = sq.item_id '
+            . 'JOIN item_family f ON f.id = i.family_id '
+            . 'WHERE sq.hu_id = ?'
+        );
+        $statement->execute([$huId]);
+        $existingFamilyIds = $statement->fetchAll(PDO::FETCH_COLUMN);
+        if ($existingFamilyIds === []) {
+            return true;
+        }
+
+        // Obtener ID de familia del nuevo item
+        $statement = $this->pdo->prepare(
+            'SELECT f.id FROM item i JOIN item_family f ON f.id = i.family_id WHERE i.sku = ?'
+        );
+        $statement->execute([$newItemCode]);
+        $newFamilyId = $statement->fetchColumn();
+        if ($newFamilyId === false) {
+            return false;
+        }
+
+        // Si es la misma familia, es compatible
+        if (in_array($newFamilyId, $existingFamilyIds, true)) {
+            return true;
+        }
+
+        // Verificar reglas de exclusión (FORBIDS) entre familias
+        $placeholders = implode(',', array_fill(0, count($existingFamilyIds), '?'));
+        $statement = $this->pdo->prepare(
+            "SELECT 1 FROM compatibility_rule cr "
+            . "JOIN attribute sa1 ON sa1.id = cr.source_attribute_id "
+            . "JOIN attribute sa2 ON sa2.id = cr.target_attribute_id "
+            . "JOIN item_family_attribute ifa1 ON ifa1.attribute_id = sa1.id "
+            . "JOIN item_family_attribute ifa2 ON ifa2.attribute_id = sa2.id "
+            . "WHERE cr.rule_type = 'FORBIDS' "
+            . "AND ifa1.item_family_id = ? "
+            . "AND ifa2.item_family_id IN ($placeholders) "
+            . "AND cr.scope = 'AISLE'"
+        );
+        $params = array_merge([$newFamilyId], $existingFamilyIds);
+        $statement->execute($params);
+        if ($statement->fetchColumn()) {
+            return false; // Existe regla de prohibición
+        }
+
+        return true;
     }
 }

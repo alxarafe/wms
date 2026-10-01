@@ -8,10 +8,6 @@ interface HttpOptions {
 
 export async function httpCall<T>(path: string, options: HttpOptions): Promise<OperationResult<T>> {
   const base = apiBaseUrl();
-  if (!base) {
-    return { ok: false, status: 0, error: 'Modo simulado activo: no hay base URL.', details: null };
-  }
-
   try {
     const response = await fetch(`${base}${path}`, {
       method: options.method,

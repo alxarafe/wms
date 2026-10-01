@@ -9,32 +9,15 @@ if [[ -z "$postgres_container" ]]; then
     exit 1
 fi
 
-migrations=(
-    "$project_dir/database/migrations/001_create_wms_schema.sql"
-    "$project_dir/database/migrations/002_seed_demo_data.sql"
-    "$project_dir/database/migrations/003_allow_outbound_movements.sql"
-)
-for migration in "${migrations[@]}"; do
-    if [[ ! -f "$migration" ]]; then
-        echo "Falta la migración $migration" >&2
-        exit 1
-    fi
-done
+# Usar database_test que es a la que se conecta php-api-test
+database_name="database_test"
 
-# Regresión del esquema antiguo public, solo en la base aislada PHP.
-# No reinicia el esquema v2 ni ninguna base Java.
-for database_name in database_bruno_php; do
-    if ! docker exec "$postgres_container" psql -U root -d postgres -tAc \
-        "SELECT 1 FROM pg_database WHERE datname = '$database_name'" | grep -q 1; then
-        docker exec "$postgres_container" createdb -U root "$database_name"
-    fi
-    docker exec "$postgres_container" psql -U root -d "$database_name" -v ON_ERROR_STOP=1 \
-        -c 'DROP SCHEMA public CASCADE; CREATE SCHEMA public;' >/dev/null
-    for migration in "${migrations[@]}"; do
-        docker exec -i "$postgres_container" psql -U root -d "$database_name" -v ON_ERROR_STOP=1 \
-            < "$migration" >/dev/null
-    done
-done
+# Resetear y aplicar datos maestros + semilla (002) que reset_test_database.sh trunca
+"$project_dir/bin/reset_test_database.sh"
+docker exec -i "$postgres_container" psql -U root -d "$database_name" -v ON_ERROR_STOP=1 \
+    < "$project_dir/database/migrations/002_master_data.sql" >/dev/null
+docker exec -i "$postgres_container" psql -U root -d "$database_name" -v ON_ERROR_STOP=1 \
+    < "$project_dir/database/migrations/002_seed_demo_data.sql" >/dev/null
 
 "${compose[@]}" up -d --force-recreate --no-deps php-api-test
 
@@ -63,10 +46,10 @@ for collection in health state operations; do
         "$cli_image" run --env php-docker -r
 done
 
-differences="$(docker exec -i "$postgres_container" psql -X -q -U root -d database_bruno_php \
+differences="$(docker exec -i "$postgres_container" psql -X -q -U root -d "$database_name" \
     -v ON_ERROR_STOP=1 -tA < "$project_dir/api-tests/bruno/operations/verify.sql")"
 if [[ "$differences" != '0' ]]; then
-    echo "Persistencia inesperada en database_bruno_php: $differences diferencias" >&2
+    echo "Persistencia inesperada en $database_name: $differences diferencias" >&2
     exit 1
 fi
 echo "PHP: salud, estado inicial y operaciones verificados; persistencia esperada correcta"

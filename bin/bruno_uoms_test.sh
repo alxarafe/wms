@@ -9,22 +9,8 @@ if [[ -z "$postgres_container" ]]; then
     exit 1
 fi
 
-migration="$project_dir/database/migrations/004_create_wms_review_v2_schema.sql"
-if [[ ! -f "$migration" ]]; then
-    echo "Falta la migración $migration" >&2
-    exit 1
-fi
-
-database_name="database_bruno_php"
-if ! docker exec "$postgres_container" psql -U root -d postgres -tAc \
-    "SELECT 1 FROM pg_database WHERE datname = '$database_name'" | grep -q 1; then
-    docker exec "$postgres_container" createdb -U root "$database_name"
-fi
-# Solo esquema v2 limpio (004); sin datos sembrados. Java queda aparcado.
-docker exec "$postgres_container" psql -U root -d "$database_name" -v ON_ERROR_STOP=1 \
-    -c 'DROP SCHEMA IF EXISTS wms_review_v2 CASCADE;' >/dev/null
-docker exec -i "$postgres_container" psql -U root -d "$database_name" -v ON_ERROR_STOP=1 \
-    < "$migration" >/dev/null
+database_name="database_test"
+"$project_dir/bin/reset_test_database.sh"
 
 "${compose[@]}" up -d --force-recreate --no-deps php-api-test
 

@@ -1,7 +1,6 @@
-// −−− Contrato (borrador) −−−
-// Esta forma es la que aplica hoy la capa de simulacros. Cuando existan los
-// endpoints reales en PHP y Java, deberán devolver la misma forma (paridad de
-// contrato). La decisión de ocupación/capacidad pertenece al WMS; el cliente
+// −−− Contrato común del cliente −−−
+// PHP es la implementación activa y Java debe conservar esta misma forma al
+// activarse. La decisión de ocupación/capacidad pertenece al WMS; el cliente
 // muestra el estado que la API le devuelve.
 
 export type LocationRole = 'RESERVE' | 'PICKING';

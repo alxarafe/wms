@@ -50,8 +50,7 @@ La generación de `location.code` debe obedecer la configuración persistida del
 almacén: `separator` separa los segmentos y cada coordenada se rellena a la
 anchura indicada por `aisle_digits`, `bay_digits` y `level_digits`. Por ejemplo,
 para el almacén A (`separator='.'`, `aisle_digits=1`, `bay_digits=2`,
-`level_digits=1`) el primer hueco del nivel superior es `A.1.01.2`. El cliente
-simulado usa la misma convención; no mantiene el formato legacy `P-A-01-02`.
+`level_digits=1`) el primer hueco del nivel superior es `A.1.01.2`. El cliente usa la misma convención; no mantiene el formato legacy `P-A-01-02`.
 La renumeración de huecos existentes al cambiar el formato sigue bloqueada tras
 crear la primera calle, por lo que esta regla no implica una migración automática
 ni una modificación de datos ya persistidos.

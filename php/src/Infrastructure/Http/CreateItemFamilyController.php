@@ -24,13 +24,14 @@ final readonly class CreateItemFamilyController
     public function __invoke(): void
     {
         try {
-            $input = CatalogueInput::parse($this->app->request()->getBody(), ['code', 'name', 'attributes']);
+            $input = CatalogueInput::parse($this->app->request()->getBody(), ['code', 'name', 'attributes', 'parent_family_id']);
             $useCase = new CreateItemFamily(new PdoItemFamilyRepository(Database::getConnection()));
-            $family = $useCase->execute($input->string('code'), $input->string('name'), $input->strings('attributes'));
+            $family = $useCase->execute($input->string('code'), $input->string('name'), $input->strings('attributes'), $input->optionalString('parent_family_id'));
             $this->app->json([
                 'id' => $family->id()->value(),
                 'code' => $family->code()->value(),
                 'name' => $family->name(),
+                'parent_family_id' => $family->parentFamilyId()?->value(),
                 'attributes' => array_map(
                     static fn (StorageAttributeCode $attribute): string => $attribute->value(),
                     $family->attributes(),

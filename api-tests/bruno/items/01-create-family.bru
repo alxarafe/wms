@@ -1,7 +1,7 @@
 meta {
-  name: crear familia FOOD
+  name: crear familia CHILLED_FOOD
   type: http
-  seq: 1
+  seq: 3
 }
 
 post {
@@ -17,16 +17,21 @@ headers {
 
 body:json {
   {
-    "code": "FOOD",
-    "name": "Alimentos",
-    "attributes": []
+    "code": "CHILLED_FOOD",
+    "name": "Alimentos refrigerados",
+    "attributes": [
+      "CHILLED",
+      "FOOD"
+    ]
   }
 }
 
 tests {
-  test("crea la familia FOOD", function () {
+  test("crea la familia CHILLED_FOOD con atributos FOOD y CHILLED", function () {
     expect(res.getStatus()).to.equal(201);
-    expect(res.getBody().code).to.equal("FOOD");
-    expect(res.getBody().attributes).to.eql([]);
+    expect(res.getBody().id).to.match(/^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i);
+    expect(res.getBody().code).to.equal("CHILLED_FOOD");
+    expect(res.getBody().name).to.equal("Alimentos refrigerados");
+    expect(res.getBody().attributes).to.eql(["CHILLED", "FOOD"]);
   });
 }

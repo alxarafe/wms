@@ -1,7 +1,9 @@
 <script lang="ts">
-  import { submitIssue, submitReceipt } from '../api/endpoints';
+  import { onMount } from 'svelte';
+  import { submitIssue, submitReceipt, fetchItems } from '../api/endpoints';
   import type {
     IssueRequest,
+    Item,
     LocationState,
     OperationResult,
     ReceiptRequest,
@@ -19,12 +21,21 @@
   let batchCode = $state('');
   let expirationDate = $state('');
 
+  let items = $state<Item[]>([]);
+
   const ready = $derived(Boolean(itemCode.trim()) && quantity !== null && quantity > 0);
 
   const available = $derived(
     location?.references.find((ref) => ref.itemCode === itemCode.trim())?.quantity ?? 0,
   );
   const unitOptions = ['EA', 'BOX', 'PAL', 'KG'];
+
+  async function loadItems(): Promise<void> {
+    const result = await fetchItems();
+    if (result.ok) {
+      items = result.data;
+    }
+  }
 
   function reset(): void {
     itemCode = '';
@@ -63,6 +74,10 @@
       }
     }
   }
+
+  onMount(() => {
+    void loadItems();
+  });
 </script>
 
 {#if location}
@@ -85,13 +100,11 @@
 
     <label class="field">
       <span>Artículo (código)</span>
-      <input bind:value={itemCode} list="items" placeholder="YOGUR FRESA, PALITOS CANGREJO, …" />
+      <input bind:value={itemCode} list="items" placeholder="Escribe para buscar…" />
       <datalist id="items">
-        <option value="YOGUR FRESA">Yogur de fresa refrigerado</option>
-        <option value="PALITOS CANGREJO">Palitos de cangrejo congelados</option>
-        <option value="ARROZ LARGO">Arroz de grano largo</option>
-        <option value="LEJIA BLANCA">Lejía blanca</option>
-        <option value="AGUA MINERAL">Agua mineral sin gas</option>
+        {#each items as item (item.id)}
+          <option value={item.sku}>{item.name}</option>
+        {/each}
       </datalist>
     </label>
 

@@ -19,6 +19,7 @@ services:
       MIGRATIONS_PATH: /var/www/database/migrations
       POSTGRES_USER: root
       POSTGRES_PASSWORD: root
+      WMS_REVIEW_V2_SCHEMA: public
     depends_on:
       database:
         condition: service_started
@@ -48,7 +49,8 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./docker/postgres/init:/docker-entrypoint-initdb.d
+      - ./docker/postgres/init:/docker-entrypoint-initdb.d:ro
+      - ./database/mvp.sql:/docker-entrypoint-mvp.sql:ro
 
 volumes:
   postgres_data:
