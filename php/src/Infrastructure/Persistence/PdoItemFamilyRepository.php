@@ -39,7 +39,7 @@ final readonly class PdoItemFamilyRepository implements ItemFamilyRepository
     public function findByCode(ItemFamilyCode $code): ?ItemFamily
     {
         $row = $this->fetch(
-            sprintf('SELECT id, code, name FROM %s WHERE code = :code', Database::qualified(self::ITEM_FAMILY)),
+            sprintf('SELECT id, code, name, parent_family_id FROM %s WHERE code = :code', Database::qualified(self::ITEM_FAMILY)),
             ['code' => $code->value()],
         );
         return $row === null ? null : $this->hydrate($row);
@@ -48,14 +48,14 @@ final readonly class PdoItemFamilyRepository implements ItemFamilyRepository
     /** @return list<ItemFamily> */
     public function findAll(): array
     {
-        $rows = $this->statement(sprintf('SELECT id, code, name FROM %s ORDER BY code', Database::qualified(self::ITEM_FAMILY)))->fetchAll(PDO::FETCH_ASSOC);
+        $rows = $this->statement(sprintf('SELECT id, code, name, parent_family_id FROM %s ORDER BY code', Database::qualified(self::ITEM_FAMILY)))->fetchAll(PDO::FETCH_ASSOC);
         return array_values(array_map(fn (array $row): ItemFamily => $this->hydrate($row), $rows));
     }
 
     public function findById(ItemFamilyId $id): ?ItemFamily
     {
         $row = $this->fetch(
-            sprintf('SELECT id, code, name FROM %s WHERE id = :id', Database::qualified(self::ITEM_FAMILY)),
+            sprintf('SELECT id, code, name, parent_family_id FROM %s WHERE id = :id', Database::qualified(self::ITEM_FAMILY)),
             ['id' => $id->value()],
         );
         return $row === null ? null : $this->hydrate($row);
@@ -90,7 +90,10 @@ final readonly class PdoItemFamilyRepository implements ItemFamilyRepository
                 ['id' => $row['id']],
             )->fetchAll(PDO::FETCH_COLUMN)),
         );
-        return new ItemFamily(new ItemFamilyId($row['id']), new ItemFamilyCode($row['code']), $row['name'], null, $codes);
+        $parentFamilyId = !empty($row['parent_family_id'])
+            ? new ItemFamilyId($row['parent_family_id'])
+            : null;
+        return new ItemFamily(new ItemFamilyId($row['id']), new ItemFamilyCode($row['code']), $row['name'], $parentFamilyId, $codes);
     }
 
     /** @param array<string, scalar> $params */

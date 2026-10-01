@@ -19,7 +19,7 @@ services:
       MIGRATIONS_PATH: /var/www/database/migrations
       POSTGRES_USER: root
       POSTGRES_PASSWORD: root
-      WMS_REVIEW_V2_SCHEMA: public
+      WMS_REVIEW_V2_SCHEMA: wms_review_v2
     depends_on:
       database:
         condition: service_started
